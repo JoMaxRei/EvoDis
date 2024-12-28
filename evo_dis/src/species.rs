@@ -1,3 +1,5 @@
+use std::f64::consts::PI;
+
 use bevy::prelude::*;
 use rand::Rng;
 use rand_chacha::ChaCha8Rng;
@@ -5,7 +7,8 @@ use rand_distr::{Distribution, StandardNormal};
 
 use crate::settings::SimulationSettings;
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
+#[reflect(Component)]
 pub struct Species {
     pub bodymass: f64,
     pub feeding_center: f64,
@@ -46,6 +49,7 @@ impl Species {
         let min = (self.dispersal_rate as f64 / (1.0 + settings.dispersel_variance)).log2();
         let diff = (self.dispersal_rate as f64 * (1.0 + settings.dispersel_variance)).log2() - min;
         let dispersal_rate = 2_f64.powf(sampler.r#gen::<f64>() * diff + min).round() as u64;
+        info!("dispersal rate is {}", dispersal_rate);
 
         Species {
             bodymass,
@@ -61,7 +65,7 @@ impl Species {
         }
     }
 
-    fn calculate_predator_strength(
+    pub fn calculate_predator_strength(
         dispersal_rate: u64,
         zero_crossing: f64,
         initial_dispersal_rate: f64,
@@ -78,9 +82,89 @@ impl Species {
 
         true
     }
+
+    pub fn can_feed_on(&self, rhs: &Species) -> bool {
+        self.feeding_center - self.feeding_range < rhs.bodymass
+            && self.feeding_center + self.feeding_range > rhs.bodymass
+    }
+
+    pub fn relative_difference(&self, rhs: &Species) -> f64 {
+        (rhs.bodymass - self.feeding_center).abs() / self.feeding_range
+    }
+
+    pub fn epsilon(&self, rhs: &Species) -> f64 {
+        (2.0 / PI).sqrt() * self.predator_strength / self.feeding_range
+            * (-2.0 * self.relative_difference(rhs).powi(2)).exp()
+    }
 }
 
-#[derive(Component)]
+#[test]
+fn test_can_feed_on() {
+    let lhs = Species {
+        bodymass: 3.0,
+        feeding_center: 1.0,
+        feeding_range: 1.0,
+        first_occurence: 0.0,
+        predator_strength: 0.0,
+        dispersal_rate: 0,
+    };
+    let rhs = Species {
+        bodymass: 1.0,
+        feeding_center: 1.0,
+        feeding_range: 1.0,
+        first_occurence: 0.0,
+        predator_strength: 0.0,
+        dispersal_rate: 0,
+    };
+    assert_eq!(lhs.can_feed_on(&rhs), true);
+    assert_eq!(rhs.can_feed_on(&lhs), false);
+}
+
+#[test]
+fn test_relative_difference() {
+    let lhs = Species {
+        bodymass: 3.0,
+        feeding_center: 1.0,
+        feeding_range: 1.0,
+        first_occurence: 0.0,
+        predator_strength: 0.0,
+        dispersal_rate: 0,
+    };
+    let rhs = Species {
+        bodymass: 1.0,
+        feeding_center: 1.0,
+        feeding_range: 1.0,
+        first_occurence: 0.0,
+        predator_strength: 0.0,
+        dispersal_rate: 0,
+    };
+    assert_eq!(lhs.relative_difference(&rhs), 0.0);
+    assert_eq!(rhs.relative_difference(&lhs), 2.0);
+}
+
+#[test]
+fn test_epsilon() {
+    let lhs = Species {
+        bodymass: 3.0,
+        feeding_center: 1.0,
+        feeding_range: 1.0,
+        first_occurence: 0.0,
+        predator_strength: 0.8,
+        dispersal_rate: 0,
+    };
+    let rhs = Species {
+        bodymass: 1.2,
+        feeding_center: 1.0,
+        feeding_range: 1.0,
+        first_occurence: 0.0,
+        predator_strength: 1.0,
+        dispersal_rate: 0,
+    };
+    assert_eq!(lhs.epsilon(&rhs), 0.5892322244853174);
+}
+
+#[derive(Component, Reflect)]
+#[reflect(Component)]
 pub struct Individual(pub Entity);
 
 #[derive(Component)]
