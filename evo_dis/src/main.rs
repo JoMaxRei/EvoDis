@@ -8,7 +8,7 @@ fn main() {
     App::new()
         .add_plugins((
             DefaultPlugins.set(LogPlugin {
-                level: Level::INFO,
+                level: Level::DEBUG,
                 ..default()
             }),
             WorldInspectorPlugin::new(),

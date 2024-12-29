@@ -49,7 +49,7 @@ impl Species {
         let min = (self.dispersal_rate as f64 / (1.0 + settings.dispersel_variance)).log2();
         let diff = (self.dispersal_rate as f64 * (1.0 + settings.dispersel_variance)).log2() - min;
         let dispersal_rate = 2_f64.powf(sampler.r#gen::<f64>() * diff + min).round() as u64;
-        info!("dispersal rate is {}", dispersal_rate);
+        debug!("dispersal rate is {}", dispersal_rate);
 
         Species {
             bodymass,

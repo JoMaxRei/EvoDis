@@ -12,7 +12,7 @@ mod species;
 
 pub fn plugin(app: &mut App) {
     let sampler = ChaCha8Rng::seed_from_u64(0);
-    app.add_event::<EventType>()
+    app.register_type::<Speciation>()
         .insert_resource(Sampler(sampler))
         .init_resource::<SimulationSettings>()
         .insert_state(SimulationState::Main)
@@ -38,6 +38,7 @@ struct SimulationTime(f64);
 enum SimulationState {
     Main,
     Speciation,
+    CheckSurvivors,
     Dispersal,
     Done,
 }
@@ -45,11 +46,11 @@ enum SimulationState {
 #[derive(Resource)]
 struct Sampler(ChaCha8Rng);
 
-#[derive(Event)]
-enum EventType {
-    /// Gets fired when a new species is inserted into the command queue.
-    /// .0 contains the foodweb where it was from, .1 contains the species itself
-    Speciation(Entity, Entity),
+#[derive(Resource, Reflect)]
+#[reflect(Resource)]
+struct Speciation {
+    foodweb: Entity,
+    species: Entity,
 }
 
 fn setup(settings: Res<SimulationSettings>, mut sampler: ResMut<Sampler>, mut commands: Commands) {
@@ -108,20 +109,26 @@ fn handle_event(
     species: Query<&Species>,
     mut next_state: ResMut<NextState<SimulationState>>,
 ) {
+    if time.0 >= 10.0 {
+        next_state.set(SimulationState::Done);
+        return;
+    }
+
     let mut total_dispersal_rate = 0;
     for individuum in &individuums {
         total_dispersal_rate += species.get(individuum.0).unwrap().dispersal_rate;
     }
-    info!("total dispersal rate {}", total_dispersal_rate);
+    debug!("total dispersal rate {}", total_dispersal_rate);
 
     let total_speciation_rate =
         settings.speciation_rate_per_individuum * individuums.iter().count() as u64;
-    info!("total speciation rate {}", total_speciation_rate);
+    debug!("total speciation rate {}", total_speciation_rate);
 
     time.0 += 1.0
         / (1.0 + total_dispersal_rate as f64 / total_speciation_rate as f64)
         / settings.grid_size.x as f64
         / settings.grid_size.y as f64;
+    info!("time is now {}", time.0);
 
     let event_is_speciation = (total_dispersal_rate + total_speciation_rate)
         * sampler.0.gen_range(0..=1)

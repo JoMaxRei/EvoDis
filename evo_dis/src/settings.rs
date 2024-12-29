@@ -39,7 +39,7 @@ impl Default for SimulationSettings {
         SimulationSettings {
             speciation_rate_per_individuum: base_rate,
             feeding_range: Range::new(0.2, 2.0),
-            grid_size: UVec2::new(5, 5),
+            grid_size: UVec2::new(1, 1),
             mean_bodymass_ratio_predator_prey: 2.0,
             bodymass_range: Range::new(-5.0_f64.log10(), 5.0_f64.log10()),
             dispersel_variance: 0.3,
