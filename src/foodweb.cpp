@@ -1,9 +1,10 @@
 #include "foodweb.h"
 
 
-Foodweb::Foodweb(Species *resource, int64_t id)
+Foodweb::Foodweb(Species *resource, size_t x, size_t y)
 {
-    m_id = id;
+    m_x = x;
+    m_y = y;
 
     m_species = new Species*[MAX_DIM];
     m_fitness = new double[MAX_DIM];

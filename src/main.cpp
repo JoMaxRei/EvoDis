@@ -10,7 +10,7 @@ int main(int argc, char** argv) {
     bool load_from_file = false;
     if (load_from_file)
     {
-        sim = Simulation::load_from_file();
+        sim = Simulation::load_from_file(settings);
     }
     else
     {

@@ -23,6 +23,9 @@ public:
     double m_first_occurence;
     int64_t m_dispersal_rate;
     int64_t m_universal_id;
+    int64_t m_position_in_array;
+
+    void set_position(int64_t m_position_in_array);
 };
 
 #endif

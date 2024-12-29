@@ -8,7 +8,8 @@ Species::Species(
         double first_occurence,
         int64_t dispersal_rate,
         int64_t universal_id
-) : m_bodymass(bodymass),
+) : m_position_in_array(-1),
+    m_bodymass(bodymass),
     m_feeding_center(feeding_center),
     m_feeding_range(feeding_range),
     m_predator_strength(predator_strength),
@@ -17,4 +18,9 @@ Species::Species(
     m_universal_id(universal_id)
 {
 
+}
+
+void Species::set_position(int64_t position_in_array)
+{
+    m_position_in_array = position_in_array;
 }

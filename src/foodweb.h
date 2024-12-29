@@ -15,7 +15,7 @@ public:
     // Creates a new foodweb
     // @param resource adds a non-extinguishable species to the foodweb
     // @param id the id of this new foodweb
-    Foodweb(Species *resource, int64_t id);
+    Foodweb(Species *resource, size_t x, size_t y);
 
     // Adds a species to the foodweb
     //@return -1 if maximum species in this web was exceeded, position of the species otherwise
@@ -23,8 +23,10 @@ public:
     // Sum of all species dispersal rates on this foodweb
     int64_t m_local_dispersal_rate;
 
-    // id of the this foodweb
-    int64_t m_id;
+    // x position of the this foodweb
+    size_t m_x;
+    // y position of the this foodweb
+    size_t m_y;
 
     // maximum species that can live in a foodweb
     static const size_t MAX_DIM = 100;
