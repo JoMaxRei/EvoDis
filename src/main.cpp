@@ -1,5 +1,6 @@
-#include "species.h"
+#include "simulation.h"
 
 int main(int argc, char** argv) {
-    return 0;
+    Simulation sim;
+    return sim.m_result;
 }
