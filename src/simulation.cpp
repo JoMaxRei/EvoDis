@@ -1,5 +1,9 @@
 #include "simulation.h"
 
+Simulation::Simulation() : m_result(-1)
+{
+
+}
 
 Simulation Simulation::create_new(SimulationSettings settings)
 {
@@ -19,7 +23,7 @@ void Simulation::run()
     }
 }
 
-Simulation::Simulation()
+Simulation::Simulation(std::string path)
 {
 
 }
