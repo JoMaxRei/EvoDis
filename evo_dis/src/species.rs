@@ -163,9 +163,15 @@ fn test_epsilon() {
     assert_eq!(lhs.epsilon(&rhs), 0.5892322244853174);
 }
 
-#[derive(Component, Reflect)]
+#[derive(Component, Reflect, PartialEq)]
 #[reflect(Component)]
 pub struct Individual(pub Entity);
+
+#[test]
+fn test_partial_eq() {
+    assert!(Individual(Entity::PLACEHOLDER) == Individual(Entity::PLACEHOLDER));
+    assert!(&Individual(Entity::PLACEHOLDER) == &Individual(Entity::PLACEHOLDER));
+}
 
 #[derive(Component)]
 pub struct Source;

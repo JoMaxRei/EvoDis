@@ -31,6 +31,9 @@ pub struct SimulationSettings {
     pub competition_parameter: f64,
     /// AKA x
     pub trophic_loss: f64,
+    /// AKA l
+    pub range: u32,
+    pub speciations_per_patch: f64,
 }
 
 impl Default for SimulationSettings {
@@ -39,7 +42,7 @@ impl Default for SimulationSettings {
         SimulationSettings {
             speciation_rate_per_individuum: base_rate,
             feeding_range: Range::new(0.2, 2.0),
-            grid_size: UVec2::new(1, 1),
+            grid_size: UVec2::new(10, 10),
             mean_bodymass_ratio_predator_prey: 2.0,
             bodymass_range: Range::new(-5.0_f64.log10(), 5.0_f64.log10()),
             dispersel_variance: 0.3,
@@ -49,6 +52,19 @@ impl Default for SimulationSettings {
             base_gain: 1000.0,
             competition_parameter: 3.0,
             trophic_loss: 0.4,
+            range: 1,
+            speciations_per_patch: 100.0,
         }
     }
+}
+
+#[derive(Default, Resource, Reflect)]
+#[reflect(Resource)]
+pub struct Statistics {
+    pub failed_dispersals: u64,
+    pub died_individuals: u64,
+    pub died_species: u64,
+    pub events: u64,
+    pub dispersals: u64,
+    pub speciations: u64,
 }
