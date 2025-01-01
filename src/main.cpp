@@ -1,32 +1,45 @@
 #include <stdlib.h>
 
-#include "easylogging++.h"
+#include "CLI11.hpp"
 
+#include "easylogging++.h"
 INITIALIZE_EASYLOGGINGPP
 
 #include "simulation.h"
 #include "simulation_settings.h"
 
 int main(int argc, char** argv) {
+    CLI::App app{"EvoDis - Simulation to prove the developed model"};
+    argv = app.ensure_utf8(argv);
+    // create new
+    CLI::App *create_new = app.add_subcommand("new", "creates a new simulation");
+
+    uint64_t seed;
+    create_new->add_option("-s,--seed", seed, "seed of the simulation")->required();
+
+    // load from file
+    CLI::App *load_from_file = app.add_subcommand("load", "loads a simulation from file");
+
+    // parse commands
+    app.require_subcommand(1);
+
+    CLI11_PARSE(app, argc, argv);
+
     // Load config file from disk
     el::Configurations conf("./log.conf");
     // reconfigure loggers to use config
     el::Loggers::reconfigureAllLoggers(conf);
     // log
-    LOG(INFO) << "My first info log using default logger";
-    LOG(DEBUG) << "My first debug log using default logger";
-    LOG(ERROR) << "My first error log using default logger";
-    LOG(WARNING) << "My first Warning log using default logger";
-    // collect parameters from argc and argv 
+    // LOG(INFO) << "My first info log using default logger";
+    // LOG(DEBUG) << "My first debug log using default logger";
+    // LOG(ERROR) << "My first error log using default logger";
+    // LOG(WARNING) << "My first Warning log using default logger";
     SimulationSettings settings = SimulationSettings::DEFAULT();
     Simulation sim;
-    bool load_from_file = false;
-    if (load_from_file)
-    {
+    if (load_from_file->parsed()) {
         sim = Simulation::load_from_file(settings);
     }
-    else
-    {
+    else if(create_new->parsed()) {
         sim = Simulation::create_new(settings);
     }
     sim.run();
