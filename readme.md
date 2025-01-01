@@ -18,3 +18,7 @@ This installs GSL for the 64-bit MinGW toolchain.
 1. Add changes with `git add .`
 2. Package changes with `git commit`
 3. Push changes with `git push`
+
+# Logging
+
+See https://github.com/abumq/easyloggingpp
