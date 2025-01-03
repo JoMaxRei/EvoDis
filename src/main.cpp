@@ -8,7 +8,8 @@ INITIALIZE_EASYLOGGINGPP
 #include "simulation.h"
 #include "simulation_settings.h"
 
-int main(int argc, char** argv) {
+int main(int argc, char **argv)
+{
     CLI::App app{"EvoDis - Simulation to prove the developed model"};
     argv = app.ensure_utf8(argv);
     // create subcommands
@@ -47,10 +48,12 @@ int main(int argc, char** argv) {
     // Actual simulation
     SimulationSettings settings = SimulationSettings::DEFAULT();
     Simulation sim;
-    if (load_from_file->parsed()) {
+    if (load_from_file->parsed())
+    {
         sim = Simulation::load_from_file(settings);
     }
-    else if(create_new->parsed()) {
+    else if (create_new->parsed())
+    {
         sim = Simulation::create_new(settings);
     }
     sim.run();
