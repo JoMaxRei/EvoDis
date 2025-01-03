@@ -2,8 +2,8 @@
 #define SIMULATION_H_
 
 #include <string>
-#include <gsl/gsl_rng.h>
-#include <gsl/gsl_randist.h>
+ #include <gsl/gsl_rng.h>
+ #include <gsl/gsl_randist.h>
 #include "simulation_settings.h"
 #include "foodweb.h"
 #include "species.h"

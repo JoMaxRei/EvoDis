@@ -14,3 +14,7 @@ file(GLOB SOURCES "src/*.*")
 add_executable(EvoDis ${SOURCES})
 
 target_link_libraries(EvoDis GSL::gsl GSL::gslcblas)
+get_target_property(GSL_DLL_PATH GSL::gsl IMPORTED_LOCATION)
+add_custom_command(TARGET EvoDis POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    ${GSL_DLL_PATH} $<TARGET_FILE_DIR:EvoDis>)

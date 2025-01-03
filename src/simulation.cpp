@@ -17,7 +17,7 @@ Simulation Simulation::create_new(SimulationSettings settings)
     simulation.m_zero_crossing = settings.zero_crossing * (double)settings.speciation_rate_per_population;
     simulation.m_min_feeding_range = settings.min_feeding_range;
     simulation.m_max_feeding_range = settings.max_feeding_range;
-    gsl_rng_set(simulation.m_generator, 0);
+    // gsl_rng_set(simulation.m_generator, 0);
     return simulation;
 }
 
@@ -78,11 +78,12 @@ Simulation::Simulation(SimulationSettings settings) : m_result(0), m_speciation_
     }
 
     // Random Number Generator initialisieren
-    // const gsl_rng_type *T;
-    // gsl_rng_env_setup();
+    const gsl_rng_type *T;
+    gsl_rng_env_setup();
     // // default random number generator (so called mt19937)
-    // T = gsl_rng_default;
-    // m_generator = gsl_rng_alloc(T);
+    T = gsl_rng_default;
+    m_generator = gsl_rng_alloc(T);
+    LOG(INFO) << " done with init";
 }
 
 void Simulation::speciate()

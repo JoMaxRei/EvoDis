@@ -2,16 +2,15 @@
 
 1. make build dir with `mkdir build`
 2. cd into build `cd build`
-3. create files with `cmake ..` (on windows: `cmake -DCMAKE_PREFIX_PATH="C:/msys64/mingw64" ..` bzw. `cmake -DCMAKE_PREFIX_PATH="C:/Program Files (x86)/MSYS2/mingw64" ..`)
-    * also add `"C:/msys64/mingw64/**"` to cpp settings of .vscode
+3. create files with `cmake ..` (on windows: `cmake -DCMAKE_PREFIX_PATH="C:\path\to\vcpkg\packages\gsl_x64-windows" ..`)
+    * also add `"C:/path/to/vcpkg/packages/**"` to cpp settings of .vscode
 4. build project with `cmake --build .`
 5. run project with `./EvoDis`
 
 ## On Windows
-1. Download and install MSYS2.
-2. Update MSYS2 packages: `pacman -Syu`
-3. Install GSL using MSYS2: `pacman -S mingw-w64-x86_64-gsl`
-This installs GSL for the 64-bit MinGW toolchain.
+1. Clone vcpkg `git clone https://github.com/microsoft/vcpkg.git`
+2. cd into directory and install cd vcpkg `./bootstrap-vcpkg.bat`
+3. install gsl `.\vcpkg.exe install gsl`
 
 # Git
 
