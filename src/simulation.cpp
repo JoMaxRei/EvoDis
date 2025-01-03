@@ -2,7 +2,7 @@
 
 #include <iostream>
 #include "easylogging++.h"
-// #include "exception.h"
+#include "exception.h"
 
 Simulation::Simulation() : m_result(-1), m_settings(SimulationSettings::DEFAULT())
 {
@@ -17,6 +17,7 @@ Simulation Simulation::create_new(SimulationSettings settings)
     simulation.m_zero_crossing = settings.zero_crossing * (double)settings.speciation_rate_per_population;
     simulation.m_min_feeding_range = settings.min_feeding_range;
     simulation.m_max_feeding_range = settings.max_feeding_range;
+    gsl_rng_set(simulation.m_generator, 0);
     return simulation;
 }
 
@@ -29,13 +30,14 @@ void Simulation::run()
 {
     while (m_result == 0 && m_t < (double)m_speciation_rate_per_population)
     {
-        // try
-        // {
+        try
+        {
             double old_t = m_t;
             double total_speciation_rate = (double)m_speciation_rate_per_population * m_population_count;
             m_t += 1.0;
 
-            bool event_is_speciation = (((double)m_total_dispersal_rate + total_speciation_rate) * gsl_rng_uniform(m_generator) >= (double)m_total_dispersal_rate);
+            // bool event_is_speciation = (((double)m_total_dispersal_rate + total_speciation_rate) * gsl_rng_uniform(m_generator) >= (double)m_total_dispersal_rate);
+            bool event_is_speciation = (((double)m_total_dispersal_rate + total_speciation_rate) * 0.5 >= (double)m_total_dispersal_rate);
             if (event_is_speciation)
             {
                 speciate();
@@ -44,12 +46,12 @@ void Simulation::run()
             {
                 disperse();
             }
-        // }
-        // catch(Exception& e)
-        // {
-        //     LOG(ERROR) << e.message();
-        //     m_result = e.error_code();
-        // }
+        }
+        catch(Exception& e)
+        {
+            LOG(ERROR) << e.message();
+            m_result = e.error_code();
+        }
     }
 }
 
@@ -76,11 +78,11 @@ Simulation::Simulation(SimulationSettings settings) : m_result(0), m_speciation_
     }
 
     // Random Number Generator initialisieren
-    const gsl_rng_type *T;
-    gsl_rng_env_setup();
-    // default random number generator (so called mt19937)
-    T = gsl_rng_default;
-    m_generator = gsl_rng_alloc(T);
+    // const gsl_rng_type *T;
+    // gsl_rng_env_setup();
+    // // default random number generator (so called mt19937)
+    // T = gsl_rng_default;
+    // m_generator = gsl_rng_alloc(T);
 }
 
 void Simulation::speciate()
@@ -91,13 +93,14 @@ void Simulation::speciate()
     // find web
     if(!find_web_for_speciation(x, y))
     {
-        // throw Exception("Could not find a web for speciation", (int)ErrorCodes::WebNotFound);
+        throw Exception("Could not find a web for speciation", (int)ErrorCodes::WebNotFound);
     }
 }
 
 bool Simulation::find_web_for_speciation(size_t &target_x, size_t &target_y)
 {
-    size_t sum1 = (size_t)((double)m_population_count * gsl_rng_uniform(m_generator));
+    // size_t sum1 = (size_t)((double)m_population_count * gsl_rng_uniform(m_generator));
+    size_t sum1 = (size_t)((double)m_population_count * 0.5);
     size_t sum2 = 0;
     for (size_t x = 0; x < m_settings.grid_length; x++)
     {
@@ -112,7 +115,7 @@ bool Simulation::find_web_for_speciation(size_t &target_x, size_t &target_y)
             sum2 += m_foodwebs[x][y]->get_dimension() - 1;
         }
     }
-    return true;
+    return false;
 }
 
 void Simulation::disperse()
