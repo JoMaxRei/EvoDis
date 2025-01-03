@@ -23,7 +23,12 @@ public:
 private:
     // formerly known as basic init
     Simulation(SimulationSettings settings);
-    gsl_rng *generator;
+
+    SimulationSettings m_settings;
+    void speciate();
+    bool find_web_for_speciation(size_t &target_x, size_t &target_y);
+    void disperse();
+    gsl_rng *m_generator;
 
     double m_t;
     uint64_t m_speciation_rate_per_population;
@@ -34,13 +39,20 @@ private:
     double m_min_feeding_range;
     double m_max_feeding_range;
     // current sum of populations
-    double m_population_count;
+    // AKA P
+    uint64_t m_population_count;
 
     Species **m_species;
     // list of how many of a species exist in patches
     size_t *m_species_count;
 
     Foodweb ***m_foodwebs;
+
+private:
+    enum ErrorCodes
+    {
+        WebNotFound = 1,
+    };
 };
 
 #endif

@@ -41,7 +41,7 @@ int main(int argc, char **argv)
     el::Loggers::reconfigureAllLoggers(conf);
     // log
     // LOG(INFO) << "My first info log using default logger";
-    // LOG(DEBUG) << "My first debug log using default logger";
+    LOG(DEBUG) << "My first debug log using default logger";
     // LOG(ERROR) << "My first error log using default logger";
     // LOG(WARNING) << "My first Warning log using default logger";
 

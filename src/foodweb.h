@@ -17,6 +17,10 @@ public:
     // @param id the id of this new foodweb
     Foodweb(Species *resource, size_t x, size_t y);
 
+    /// @brief returns the number of species in this foodweb, including the resource
+    /// @return 
+    size_t get_dimension() const;
+
     // Adds a species to the foodweb
     //@return -1 if maximum species in this web was exceeded, position of the species otherwise
     int64_t add_species(Species *species);

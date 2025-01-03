@@ -60,6 +60,8 @@ struct SimulationSettings
         return 30 * grid_size() + 1001;
     }
 
+    /// @brief 
+    /// @return grid_length squared
     size_t grid_size()
     {
         return grid_length * grid_length;
