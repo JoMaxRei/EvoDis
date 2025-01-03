@@ -2,7 +2,7 @@
 
 1. make build dir with `mkdir build`
 2. cd into build `cd build`
-3. create files with `cmake ..` (on windows: `cmake -DCMAKE_PREFIX_PATH="C:/msys64/mingw64" ..`)
+3. create files with `cmake ..` (on windows: `cmake -DCMAKE_PREFIX_PATH="C:/msys64/mingw64" ..` bzw. `cmake -DCMAKE_PREFIX_PATH="C:/Program Files (x86)/MSYS2/mingw64" ..`)
     * also add `"C:/msys64/mingw64/**"` to cpp settings of .vscode
 4. build project with `cmake --build .`
 5. run project with `./EvoDis`
