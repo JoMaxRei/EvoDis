@@ -26,14 +26,19 @@ private:
     gsl_rng *generator;
 
     double m_t;
+    uint64_t m_speciation_rate_per_population;
     uint64_t m_initial_dispersal_rate;
+    uint64_t m_total_dispersal_rate;
     double m_dispersal_variance;
     double m_zero_crossing;
     double m_min_feeding_range;
     double m_max_feeding_range;
+    // current sum of populations
+    double m_population_count;
 
     Species **m_species;
-    size_t *m_population_count;
+    // list of how many of a species exist in patches
+    size_t *m_species_count;
 
     Foodweb ***m_foodwebs;
 };
