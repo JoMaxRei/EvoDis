@@ -7,7 +7,6 @@
 // Contains all settings necessary to run the simulation.
 struct SimulationSettings
 {
-    std::string path;
     // Formerly wrongly known as speciation_rate_per_habitat
     uint64_t speciation_rate_per_population;
     double mean_bodymass_ratio_predator_prey;

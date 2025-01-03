@@ -16,7 +16,7 @@ public:
     /// @brief Returns the foodweb after all calculations and eliminations have been done
     /// @param target 
     /// @return the final state of the foodweb
-    static Foodweb calculate_equilibrium(Foodweb &target);
+    static Foodweb calculate_equilibrium(Foodweb *target);
 };
 
 #endif

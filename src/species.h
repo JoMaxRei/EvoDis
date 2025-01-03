@@ -12,8 +12,8 @@ public:
         double feeding_range = 1.0,
         double predator_strength = 1.0,
         double first_occurence = 0.0,
-        int64_t dispersal_rate = 1,
-        int64_t universal_id = 1
+        uint64_t dispersal_rate = 1,
+        uint64_t universal_id = 0
         );
 
     double m_bodymass;
@@ -21,8 +21,10 @@ public:
     double m_feeding_range;
     double m_predator_strength;
     double m_first_occurence;
-    int64_t m_dispersal_rate;
-    int64_t m_universal_id;
+    uint64_t m_dispersal_rate;
+    uint64_t m_universal_id;
+    /// @brief index of this species in the m_species array of the simulation
+    /// is -1 when the species has not yet been added correctly to the array.
     int64_t m_position_in_array;
 
     void set_position(int64_t m_position_in_array);

@@ -2,8 +2,9 @@
 #define SIMULATION_H_
 
 #include <string>
- #include <gsl/gsl_rng.h>
- #include <gsl/gsl_randist.h>
+#include <gsl/gsl_rng.h>
+#include <gsl/gsl_randist.h>
+#include "base_settings.h"
 #include "simulation_settings.h"
 #include "foodweb.h"
 #include "species.h"
@@ -14,8 +15,8 @@ public:
     // public constructor - will return a non-functional simulation
     Simulation();
     // formerly known as init
-    static Simulation create_new(SimulationSettings settings);
-    static Simulation load_from_file(SimulationSettings settings);
+    Simulation(BaseSettings base_settings, SimulationSettings settings);
+    Simulation(BaseSettings base_settings, std::string path);
     void run();
 
     int m_result;
@@ -25,14 +26,25 @@ private:
     Simulation(SimulationSettings settings);
 
     SimulationSettings m_settings;
+    /// @brief starts a speciation
     void speciate();
+    /// @brief Finds a web to speciate from
+    /// @param[out] target_x x coordinate of the foodweb to speciate from
+    /// @param[out] target_y y coordinate of the foodweb to speciate from
+    /// @return true if a web has been found, false otherwise
     bool find_web_for_speciation(size_t &target_x, size_t &target_y);
+    /// @brief starts a dispersal
     void disperse();
+
+    /// @brief Calculates predatorial strength
+    /// @return 
+    double calculate_predator_strength(double dispersal_rate);
     gsl_rng *m_generator;
 
     double m_t;
     uint64_t m_speciation_rate_per_population;
-    uint64_t m_initial_dispersal_rate;
+    /// @brief This will initially equal to settings.initial_dispersal_rate * settings.speciation_rate_per_population
+    double m_initial_dispersal_rate;
     uint64_t m_total_dispersal_rate;
     double m_dispersal_variance;
     double m_zero_crossing;

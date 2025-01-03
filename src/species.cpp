@@ -6,8 +6,8 @@ Species::Species(
         double feeding_range,
         double predator_strength,
         double first_occurence,
-        int64_t dispersal_rate,
-        int64_t universal_id
+        uint64_t dispersal_rate,
+        uint64_t universal_id
 ) : m_position_in_array(-1),
     m_bodymass(bodymass),
     m_feeding_center(feeding_center),

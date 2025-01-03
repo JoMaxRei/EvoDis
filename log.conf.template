@@ -1,5 +1,5 @@
 * GLOBAL:
-   FORMAT               =  "%datetime [%level] %msg"
+   FORMAT               =  "%datetime [%level] - %func - %msg"
    FILENAME             =  "./evo_dis.log"
    ENABLED              =  true
    TO_FILE              =  true

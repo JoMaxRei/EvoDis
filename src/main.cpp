@@ -48,14 +48,15 @@ int main(int argc, char **argv)
 
     // Actual simulation
     SimulationSettings settings = SimulationSettings::DEFAULT();
+    BaseSettings base_settings;
     Simulation sim;
     if (load_from_file->parsed())
     {
-        sim = Simulation::load_from_file(settings);
+        sim = Simulation(base_settings, input_path);
     }
     else if (create_new->parsed())
     {
-        sim = Simulation::create_new(settings);
+        sim = Simulation(base_settings, settings);
     }
     sim.run();
     return sim.m_result;
