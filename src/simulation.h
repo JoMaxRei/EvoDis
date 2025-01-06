@@ -14,8 +14,13 @@ class Simulation
 public:
     // public constructor - will return a non-functional simulation
     Simulation();
-    // formerly known as init
+    /// @brief formerly known as init - will return a new simulation from the given settings
+    /// @param base_settings 
+    /// @param settings 
     Simulation(BaseSettings base_settings, SimulationSettings settings);
+    /// @brief will return a simulation loaded from the file
+    /// @param base_settings 
+    /// @param path path to load from
     Simulation(BaseSettings base_settings, std::string path);
     void run();
 
