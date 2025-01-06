@@ -37,7 +37,7 @@ public:
 
 private:
     Species **m_species;
-    // number of specieson this habitat
+    // number of species on this habitat
     size_t m_species_count;
     double *m_fitness;
 };
