@@ -18,11 +18,10 @@ int main(int argc, char **argv)
     CLI::App *load_from_file = app.add_subcommand("load", "loads a simulation from file");
     app.require_subcommand(1);
 
+    BaseSettings base_settings;
     // define general parameters
-    std::string output_path;
-    app.add_option("-o,--output", output_path, "output path of the simulation")->required();
-    uint64_t speciations_per_habitat;
-    app.add_option("-t,--maxt", speciations_per_habitat, "how many events should be simulated before simulation stops")->required();
+    app.add_option("-o,--output", base_settings.output_path, "output path of the simulation")->required();
+    app.add_option("-t,--maxt", base_settings.speciations_per_patch, "how many events should be simulated before simulation stops")->required();
 
     // define parameters for new sim
     uint64_t seed;
@@ -48,7 +47,6 @@ int main(int argc, char **argv)
 
     // Actual simulation
     SimulationSettings settings = SimulationSettings::DEFAULT();
-    BaseSettings base_settings;
     Simulation sim;
     if (load_from_file->parsed())
     {
