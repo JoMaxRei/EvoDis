@@ -20,7 +20,6 @@ Simulation::Simulation(BaseSettings base_settings, SimulationSettings settings) 
     m_max_feeding_range = settings.max_feeding_range;
     gsl_rng_set(m_generator, 0);
 
-
     m_species_count[1] = settings.grid_size();
     m_species[1] = new Species(
         2.0,
@@ -40,6 +39,8 @@ Simulation::Simulation(BaseSettings base_settings, SimulationSettings settings) 
             m_foodwebs[x][y]->add_species(m_species[1]);
         }
     }
+
+    m_population_count = (uint64_t)settings.grid_size();
 
     // Calculate equilibrium for one to hash all foodwebs that are initialized the same
     // which they are
@@ -126,17 +127,20 @@ bool Simulation::find_web_for_speciation(size_t &target_x, size_t &target_y)
 {
     size_t sum1 = (size_t)((double)m_population_count * gsl_rng_uniform(m_generator));
     size_t sum2 = 0;
+    LOG(DEBUG) << "sum1 is " << sum1;
     for (size_t x = 0; x < m_settings.grid_length; x++)
     {
         for (size_t y = 0; y < m_settings.grid_length; y++)
         {
+            LOG(DEBUG) << "Foodweb dimension for x=" << x << ", y=" << y << " is " << m_foodwebs[x][y]->get_dimension();
+            sum2 += m_foodwebs[x][y]->get_dimension() - 1;
+            LOG(DEBUG) << "sum2 is " << sum2;
             if (sum1 < sum2)
             {
                 target_x = x;
                 target_y = y;
                 return true;
             }
-            sum2 += m_foodwebs[x][y]->get_dimension() - 1;
         }
     }
     return false;
