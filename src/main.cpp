@@ -24,8 +24,8 @@ int main(int argc, char **argv)
     app.add_option("-t,--maxt", base_settings.speciations_per_patch, "how many events should be simulated before simulation stops")->required();
 
     // define parameters for new sim
-    uint64_t seed;
-    create_new->add_option("-s,--seed", seed, "seed of the simulation")->required();
+    SimulationSettings settings = SimulationSettings::DEFAULT();
+    create_new->add_option("-s,--seed", settings.seed, "seed of the simulation");
 
     // define parameters for old sim
     std::string input_path;
@@ -46,7 +46,6 @@ int main(int argc, char **argv)
     // LOG(WARNING) << "My first Warning log using default logger";
 
     // Actual simulation
-    SimulationSettings settings = SimulationSettings::DEFAULT();
     Simulation sim;
     if (load_from_file->parsed())
     {

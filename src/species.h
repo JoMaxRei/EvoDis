@@ -24,10 +24,10 @@ public:
     uint64_t m_dispersal_rate;
     uint64_t m_universal_id;
     /// @brief index of this species in the m_species array of the simulation
-    /// is -1 when the species has not yet been added correctly to the array.
-    int64_t m_position_in_array;
+    size_t m_position_in_array;
 
-    void set_position(int64_t m_position_in_array);
+    void set_position(size_t m_position_in_array);
+    void update_trophic_level(double level);
 };
 
 #endif

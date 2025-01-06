@@ -8,7 +8,7 @@ Species::Species(
         double first_occurence,
         uint64_t dispersal_rate,
         uint64_t universal_id
-) : m_position_in_array(-1),
+) : m_position_in_array(0),
     m_bodymass(bodymass),
     m_feeding_center(feeding_center),
     m_feeding_range(feeding_range),
@@ -20,7 +20,13 @@ Species::Species(
 
 }
 
-void Species::set_position(int64_t position_in_array)
+void Species::set_position(size_t position_in_array)
 {
     m_position_in_array = position_in_array;
+}
+
+
+void Species::update_trophic_level(double level)
+{
+
 }
