@@ -1,4 +1,5 @@
 #include "foodweb.h"
+#include <cmath>
 
 #include "easylogging++.h"
 

@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <iostream>
+#include <cmath>
 // #include <sstream>
 #include "easylogging++.h"
 #include "exception.h"

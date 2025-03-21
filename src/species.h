@@ -2,6 +2,7 @@
 #define SPECIES_H_
 
 #include <stdint.h>
+#include <cstddef>
 
 class Species
 {

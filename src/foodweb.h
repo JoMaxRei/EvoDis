@@ -2,6 +2,7 @@
 #define FOODWEB_H_
 
 #include <stdint.h>
+#include <cstddef>
 #include <vector>
 #include "species.h"
 #include "simulation_settings.h"
