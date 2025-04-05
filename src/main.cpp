@@ -21,11 +21,12 @@ int main(int argc, char **argv)
     BaseSettings base_settings;
     // define general parameters
     app.add_option("-o,--output", base_settings.output_path, "output path of the simulation")->required();
-    app.add_option("-t,--maxt", base_settings.speciations_per_patch, "how many events should be simulated before simulation stops")->required();
+    app.add_option("-S,--spp", base_settings.speciations_per_patch, "how many events should be simulated on average on each patch before simulation stops")->required();
 
     // define parameters for new sim
     SimulationSettings settings = SimulationSettings::DEFAULT();
-    create_new->add_option("-s,--seed", settings.seed, "seed of the simulation");
+    create_new->add_option("-s,--seed", settings.seed, "seed of the simulation")->required();
+    create_new->add_option("-g,--gridL", settings.grid_length, "grid length of the simulation; Default: 5");
 
     // define parameters for old sim
     std::string input_path;

@@ -36,13 +36,21 @@ bool FoodwebCache::can_surive(Foodweb *target, Species *new_species, SimulationS
     return true;
 }
 
-std::vector<size_t> FoodwebCache::calculate_equilibrium(Foodweb *target)
+std::vector<size_t> FoodwebCache::calculate_equilibrium(Foodweb *target, SimulationSettings settings)
 {
     std::vector<size_t> dead_populations{};
     size_t index;
-    while(target->determine_dying(index))
+    while(true)
     {
-        dead_populations.push_back(index);
+        target->calculate(settings);
+        if(!target->determine_dying(index))
+        {
+            break;
+        }       
+        dead_populations.push_back(target->get_species(index)->m_position_in_array);
+        target->remove_species(index);
+
     }
+    
     return dead_populations;
 }

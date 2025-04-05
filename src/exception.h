@@ -7,13 +7,13 @@
 class Exception
 {
 public:
-    Exception(char *message, int error_code = -1);
-    char *message();
-    int error_code();
+    Exception(const char *message, size_t error_code = -1);
+    const char *message();
+    size_t error_code();
 
 private:
-    char *m_message;
-    int m_error_code;
+    const char *m_message;
+    size_t m_error_code;
 };
 
 #endif

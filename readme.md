@@ -7,6 +7,15 @@
 4. build project with `cmake --build .`
 5. run project with `./EvoDis`
 
+## Arguments
+# Order
+1. Global options (--output, --maxt)
+2. Subcommand (new / load)
+3. Subcommand specific options (--seed)
+# Help
+ '--help' shows global options and subcommands
+ '--help new' / '--help load' shows subcommand specific options
+
 ## On Windows
 1. Clone vcpkg `git clone https://github.com/microsoft/vcpkg.git`
 2. cd into directory and install cd vcpkg `./bootstrap-vcpkg.bat`

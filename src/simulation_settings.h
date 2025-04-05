@@ -15,8 +15,11 @@ struct SimulationSettings
     double zero_crossing;
     double min_feeding_range;
     double max_feeding_range;
-    // AKA n
+    /// @brief AKA n
     size_t grid_length;
+    /// @brief AKA l
+    size_t dispersal_range;
+    bool periodic_boundary_conditions;
     unsigned long seed;
     /// @brief AKA p
     double predation_parameter;
@@ -37,6 +40,8 @@ struct SimulationSettings
         , double min_feeding_range
         , double max_feeding_range
         , size_t grid_length
+        , size_t dispersal_range
+        , bool periodic_boundary_conditions
         , unsigned long seed
         , double predation_parameter
         , double base_gain
@@ -51,6 +56,8 @@ struct SimulationSettings
         , min_feeding_range(min_feeding_range)
         , max_feeding_range(max_feeding_range)
         , grid_length(grid_length)
+        , dispersal_range(dispersal_range)
+        , periodic_boundary_conditions(periodic_boundary_conditions)
         , seed(seed)
         , predation_parameter(predation_parameter)
         , base_gain(base_gain)
@@ -72,6 +79,8 @@ struct SimulationSettings
             , 0.2 //min_feeding_range
             , 2.0 //max_feeding_range
             , 5 // grid length
+            , 1 // dispersal range
+            , true // periodic boundary conditions
             , 0 // seed
             , 1.0 // predation parameter
             , 1000.0 // base gain
@@ -85,12 +94,13 @@ struct SimulationSettings
         return 30 * grid_size() + 1001;
     }
 
-    /// @brief AKA n * n or n ^ 2
+    /// @brief AKA n * n = n ^ 2
     /// @return grid_length squared
     size_t grid_size()
     {
         return grid_length * grid_length;
     }
+    
 };
 
 #endif

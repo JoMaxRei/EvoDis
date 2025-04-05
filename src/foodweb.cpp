@@ -12,6 +12,7 @@ Foodweb::Foodweb(Species *resource, size_t x, size_t y)
     m_fitness = new double[MAX_DIM];
     m_species[0] = resource;
     m_species_count = 1;
+    m_local_dispersal_rate = 0;
 }
 
 size_t Foodweb::get_dimension() const
@@ -46,14 +47,55 @@ int64_t Foodweb::add_species(Species *species)
     m_species_count += 1;
 
     m_local_dispersal_rate += species->m_dispersal_rate;
+
+    calculated = false;
+
     return (int64_t)position_in_foodweb;
+}
+
+void Foodweb::remove_species(size_t index)
+{
+    m_species_count -= 1;
+    m_local_dispersal_rate -= m_species[index]->m_dispersal_rate;
+
+    for(size_t i = index; i < m_species_count; i++)
+    {
+        m_species[i] = m_species[i + 1];
+    }
+
+    calculated = false;
 }
 
 Species *Foodweb::find_species_for_speciation(double random_value)
 {
     double random_id = (double)(m_species_count - 1) * random_value;
+    // LOG(DEBUG) << "random_id is " << random_id;
     size_t local_id = (size_t)random_id + 1;
+    // LOG(DEBUG) << "Found local species " << local_id << " to speciate";
+    // LOG(DEBUG) << "First occurence of this species is: " << m_species[local_id]->m_first_occurence;
     return m_species[local_id];
+}
+
+Species *Foodweb::find_species_for_dispersal(double random_value)
+{
+    double sum1 = (double)(m_local_dispersal_rate) * random_value;
+    // LOG(DEBUG) << "sum1 is " << sum1;
+    double sum2 = 0.0;
+    for (size_t i = 1; i < m_species_count; i++)
+    {
+        // LOG(DEBUG) << "Dispersal rate for local species " << i << " is " << m_species[i]->m_dispersal_rate;
+        sum2 += m_species[i]->m_dispersal_rate;
+        // LOG(DEBUG) << "sum2 is " << sum2;
+        if (sum1 < sum2)
+        {
+            // LOG(DEBUG) << "Found local species " << i << " to speciate";
+            // LOG(DEBUG) << "First occurence of this species is: " << m_species[i]->m_first_occurence;
+            return m_species[i];
+        }
+        
+    }
+    // LOG(DEBUG) << "No species found for dispersal";
+    return NULL;
 }
 
 Species *Foodweb::get_species(size_t index)
@@ -81,7 +123,14 @@ double Foodweb::calculate_trophic_level(size_t index)
 
 void Foodweb::calculate(SimulationSettings settings)
 {
-    LOG(DEBUG) << " - START";
+    // LOG(DEBUG) << " - START";
+
+    if (calculated)
+    {
+        // LOG(DEBUG) << "already calculated - END";
+        return;
+    }
+
     std::vector<std::vector<size_t>> preys (m_species_count, std::vector<size_t>{});
     std::vector<int> number_of_preys (m_species_count, 0);
     std::vector<std::vector<double>> epsilon (m_species_count, std::vector<double>{});
@@ -126,26 +175,17 @@ void Foodweb::calculate(SimulationSettings settings)
     for(size_t index = 1; index < m_species_count; index++)
     {
         m_fitness[index] = 1.0 / ( predation_loss[index] + 1.0 / E[index]);
-        LOG(DEBUG) << "Fitness for " << index << " is " << m_fitness[index];
+        // LOG(DEBUG) << "Fitness for " << index << " is " << m_fitness[index];
     }
 
-    LOG(DEBUG) << " - END";
+    calculated = true;
+
+    // LOG(DEBUG) << " - END";
 }
 
 double Foodweb::get_fitness(size_t index) const
 {
     return m_fitness[index];
-}
-
-void Foodweb::remove_species(size_t index)
-{
-    m_species_count -= 1;
-    m_local_dispersal_rate -= m_species[index]->m_dispersal_rate;
-
-    for(size_t i = index; i < m_species_count; i++)
-    {
-        m_species[i] = m_species[i + 1];
-    }
 }
 
 void Foodweb::calculate_feeding_relationships(
@@ -154,7 +194,7 @@ void Foodweb::calculate_feeding_relationships(
     , std::vector<std::vector<double>> &epsilon
 )
 {
-    LOG(DEBUG) << " - START";
+    // LOG(DEBUG) << " - START";
     for(size_t predator_index = 1; predator_index < m_species_count; predator_index++)
     {
         Species *predator = m_species[predator_index];
@@ -174,12 +214,12 @@ void Foodweb::calculate_feeding_relationships(
 
                 if (predation_strength < 0.0)
                 {
-                    LOG(DEBUG) << "Epsilon for " << predator_index << " is " << predation_strength;
+                    // LOG(DEBUG) << "Epsilon for " << predator_index << " is " << predation_strength;
                 }
             }
         }
     }
-    LOG(DEBUG) << " - END";
+    // LOG(DEBUG) << " - END";
 }
 
 bool Foodweb::determine_dying(size_t &index)

@@ -27,10 +27,20 @@ public:
     /// Also increments m_species_count and m_local_dispersal_rate
     /// @return -1 if maximum species in this web was exceeded, position of the species otherwise
     int64_t add_species(Species *species);
+    /// @brief Removes a species from the foodweb.
+    ///
+    /// Also decrements m_species_count and m_local_dispersal_rate.
+    /// After calling this function every entry > m_species_count is invalid.
+    /// @param index 
+    void remove_species(size_t index);
     /// @brief Returns a species for speciaten based on a random value
     /// @param random_value 
     /// @return 
     Species* find_species_for_speciation(double random_value);
+    /// @brief Returns a species for dispersal based on a random value
+    /// @param random_value 
+    /// @return 
+    Species* find_species_for_dispersal(double random_value);
     /// @brief returns a species within this foodweb by its index
     /// @param index 
     /// @return 
@@ -41,21 +51,18 @@ public:
     /// @param settings 
     void calculate(SimulationSettings settings);
     double get_fitness(size_t index) const;
-    /// @brief Removes a species from the foodweb.
-    ///
-    /// Also decrements m_species_count and m_local_dispersal_rate.
-    /// After calling this function every entry > m_species_count is invalid.
-    /// @param index 
-    void remove_species(size_t index);
 
+    /// @brief Sets index to the index of the species with the lowest fitness, if below 1.0
+    /// @param index 
+    /// @return true, if fitness of at least one species is below 1.0, false otherwise
     bool determine_dying(size_t &index);
 
     // Sum of all species dispersal rates on this foodweb
     int64_t m_local_dispersal_rate;
 
-    // x position of the this foodweb
+    // x position of this foodweb
     size_t m_x;
-    // y position of the this foodweb
+    // y position of this foodweb
     size_t m_y;
 
     // maximum species that can live in a foodweb
@@ -76,6 +83,9 @@ private:
     // number of species on this habitat
     size_t m_species_count;
     double *m_fitness;
+    
+    // true if the current status of the foodweb is calculated
+    bool calculated;
 
     static constexpr double INVERTED_SQRT_HALF_PI = 0.7978845608028654;
 };

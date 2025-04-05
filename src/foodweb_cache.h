@@ -29,7 +29,8 @@ public:
     ///
     /// Alters the original foodweb, if necessary
     /// @param[in,out] target 
-    static std::vector<size_t> calculate_equilibrium(Foodweb *target);
+    /// @return a vector of the global indices of species that have died
+    static std::vector<size_t> calculate_equilibrium(Foodweb *target, SimulationSettings settings);
 };
 
 #endif
