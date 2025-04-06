@@ -30,3 +30,9 @@
 # Logging
 
 See https://github.com/abumq/easyloggingpp
+
+# ToDo
+
+* Output anlegen
+* Foodweb-Cache
+* Speicherfunktion
