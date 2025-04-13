@@ -9,6 +9,7 @@
 #include "simulation_settings.h"
 #include "foodweb.h"
 #include "species.h"
+#include "output.h"
 
 class Simulation
 {
@@ -29,9 +30,12 @@ public:
 
 private:
     // formerly known as basic init
-    Simulation(SimulationSettings settings, double speciations_per_patch);
+    Simulation(SimulationSettings settings, std::string output_path, double speciations_per_patch);
+    
+    void create_folder(std::string path);
 
     SimulationSettings m_settings;
+
     /// @brief performs a speciation; if succesful:
     ///
     /// - adds the species to the foodweb
@@ -43,6 +47,7 @@ private:
     /// @param[out] y y coordinate of the foodweb the speciation has happened in
     /// @return true if the speciation was successful, false otherwise
     bool handle_speciation(size_t &x, size_t &y);
+
     /// @brief performs a dispersal; if succesful:
     ///
     /// - adds the species to the foodweb
@@ -54,27 +59,28 @@ private:
     /// @param[out] y y coordinate of the food web that was the target of the dispersal.
     /// @return true if the dispersal was successful, false otherwise
     bool handle_dispersal(size_t &x, size_t &y);
-    /// @brief Finds a web to speciate from
-    /// @param[out] target_x x coordinate of the foodweb to speciate from
-    /// @param[out] target_y y coordinate of the foodweb to speciate from
-    /// @return true if a web has been found, false otherwise
-    bool find_web_for_speciation(size_t &target_x, size_t &target_y);
 
-    /// @brief Finds a web to diesperse from
-    /// @param[out] target_x x coordinate of the foodweb to disperse from
-    /// @param[out] target_y y coordinate of the foodweb to disperse from
-    /// @return true if a web has been found, false otherwise
-    bool find_web_for_dispersal(size_t &target_x, size_t &target_y);
-    /// @brief Finds a web to disperse to
-    /// @param[out] target_x x coordinate of the foodweb to disperse to
-    /// @param[out] target_y y coordinate of the foodweb to disperse to
-    void find_target_web_for_dispersal(size_t &target_x, size_t &target_y);
+    /// @brief Finds a habitat where a speciation takes place
+    /// @param[out] target_x x coordinate of the habitat to speciate from
+    /// @param[out] target_y y coordinate of the habitat to speciate from
+    /// @return true if a habitat has been found, false otherwise
+    bool find_habitat_for_speciation(size_t &target_x, size_t &target_y);
+
+    /// @brief Finds a habitat to diesperse from
+    /// @param[out] target_x x coordinate of the habitat to disperse from
+    /// @param[out] target_y y coordinate of the habitat to disperse from
+    /// @return true if a habitat has been found, false otherwise
+    bool find_origin_habitat_for_dispersal(size_t &target_x, size_t &target_y);
+
+    /// @brief Finds a random neighboring habitat to disperse to
+    /// @param[out] target_x x coordinate of the habitat to disperse to
+    /// @param[out] target_y y coordinate of the habitat to disperse to 
+    void find_target_habitat_for_dispersal(size_t &target_x, size_t &target_y);
     
     /// @brief Creates a new species by speciating from a parent species.
     /// @param parent Parent species from which the new species will be derived.
     /// @return NULL if species too small (bodymass <= 0), new species otherwise
     Species* speciate(Species *parent);
-
 
     /// @brief Calculates predatorial strength
     /// @return 
@@ -82,8 +88,8 @@ private:
 
     /// @brief Decreases the global and specific population counter.
     ///
-    /// Deletes the species if it no longer exists on any food web and decreases the species counter.
-    /// @param global_index index of the species in the global species array
+    /// Deletes the species and decreases the species counter if it no longer exists in any habitat.
+    /// @param global_index index of the dying species in the global species array
     void die(size_t global_index);
 
     /// @brief returns a random value between 0.0 and 1.0 (exclusive)
@@ -92,17 +98,26 @@ private:
 
     gsl_rng *m_generator;
 
+    /// @brief Simulation time
     double m_t;
+
+    /// @brief Saving interval
+    double m_save_interval;
+
     uint64_t m_speciation_rate_per_population;
+
     /// @brief This will initially equal to settings.initial_dispersal_rate * settings.speciation_rate_per_population
     double m_initial_dispersal_rate;
+
     /// @brief This will be the sum of all populations dispersal rates
     uint64_t m_total_dispersal_rate;
+
     double m_zero_crossing;
+
     /// @brief current sum of populations
     ///
     /// AKA P
-    uint64_t m_population_count;
+    size_t m_population_count;
 
 
     double m_speciations_per_patch;
@@ -110,13 +125,17 @@ private:
     Species **m_species;
     /// @brief list of how many populations of a species exist
     size_t *m_species_count;
+
     std::vector<size_t> m_free_indices;
+
     /// @brief How many different species are in our m_species array
     ///
     /// AKA S
     size_t m_number_of_living_species;
 
     Foodweb ***m_foodwebs;
+
+    Output *m_output;
 
 private:
     enum ErrorCodes

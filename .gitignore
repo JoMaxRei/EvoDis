@@ -1,5 +1,7 @@
 build/
 
+Other/
+
 .vscode/
 
 *.log
