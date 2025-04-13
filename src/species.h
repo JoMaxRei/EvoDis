@@ -23,6 +23,7 @@ public:
     double m_predator_strength;
     double m_first_occurence;
     uint64_t m_dispersal_rate;
+    /// @brief unique id of this species
     uint64_t m_universal_id;
     /// @brief index of this species in the m_species array of the simulation
     size_t m_position_in_array;

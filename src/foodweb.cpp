@@ -20,7 +20,7 @@ size_t Foodweb::get_dimension() const
     return m_species_count;
 }
 
-int64_t Foodweb::add_species(Species *species)
+size_t Foodweb::add_species(Species *species)
 {
     if (m_species_count >= MAX_DIM)
     {
@@ -50,7 +50,7 @@ int64_t Foodweb::add_species(Species *species)
 
     calculated = false;
 
-    return (int64_t)position_in_foodweb;
+    return position_in_foodweb;
 }
 
 void Foodweb::remove_species(size_t index)
@@ -68,9 +68,9 @@ void Foodweb::remove_species(size_t index)
 
 Species *Foodweb::find_species_for_speciation(double random_value)
 {
-    double random_id = (double)(m_species_count - 1) * random_value;
+    double random_id = static_cast<double>(m_species_count - 1) * random_value;
     // LOG(DEBUG) << "random_id is " << random_id;
-    size_t local_id = (size_t)random_id + 1;
+    size_t local_id = static_cast<size_t>(random_id) + 1;
     // LOG(DEBUG) << "Found local species " << local_id << " to speciate";
     // LOG(DEBUG) << "First occurence of this species is: " << m_species[local_id]->m_first_occurence;
     return m_species[local_id];
@@ -78,9 +78,9 @@ Species *Foodweb::find_species_for_speciation(double random_value)
 
 Species *Foodweb::find_species_for_dispersal(double random_value)
 {
-    double sum1 = (double)(m_local_dispersal_rate) * random_value;
+    uint64_t sum1 = static_cast<uint64_t>(static_cast<double>(m_local_dispersal_rate) * random_value);
     // LOG(DEBUG) << "sum1 is " << sum1;
-    double sum2 = 0.0;
+    uint64_t sum2 = 0.0;
     for (size_t i = 1; i < m_species_count; i++)
     {
         // LOG(DEBUG) << "Dispersal rate for local species " << i << " is " << m_species[i]->m_dispersal_rate;

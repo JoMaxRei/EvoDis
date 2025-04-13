@@ -26,7 +26,7 @@ public:
     ///
     /// Also increments m_species_count and m_local_dispersal_rate
     /// @return -1 if maximum species in this web was exceeded, position of the species otherwise
-    int64_t add_species(Species *species);
+    size_t add_species(Species *species);
     /// @brief Removes a species from the foodweb.
     ///
     /// Also decrements m_species_count and m_local_dispersal_rate.
@@ -57,15 +57,10 @@ public:
     /// @return true, if fitness of at least one species is below 1.0, false otherwise
     bool determine_dying(size_t &index);
 
-    // Sum of all species dispersal rates on this foodweb
-    int64_t m_local_dispersal_rate;
+    /// @brief Sum of all species dispersal rates on this foodweb
+    uint64_t m_local_dispersal_rate;
 
-    // x position of this foodweb
-    size_t m_x;
-    // y position of this foodweb
-    size_t m_y;
-
-    // maximum species that can live in a foodweb
+    /// @brief maximum number of species that can live in a foodweb
     static const size_t MAX_DIM = 100;
 
 
@@ -79,12 +74,15 @@ private:
         , std::vector<int> &number_of_preys
         , std::vector<std::vector<double>> &epsilon
         );
+
+    /// @brief array of species in this foodweb
     Species **m_species;
-    // number of species on this habitat
+
+    /// @brief number of species on this habitat
     size_t m_species_count;
     double *m_fitness;
     
-    // true if the current status of the foodweb is calculated
+    /// @brief true if the current status of the foodweb is calculated
     bool calculated;
 
     static constexpr double INVERTED_SQRT_HALF_PI = 0.7978845608028654;

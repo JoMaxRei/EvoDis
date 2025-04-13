@@ -21,7 +21,7 @@ bool FoodwebCache::has_prey(Foodweb *target, Species *new_species)
 
 bool FoodwebCache::can_surive(Foodweb *target, Species *new_species, SimulationSettings settings)
 {
-    size_t new_index = (size_t)target->add_species(new_species);
+    size_t new_index = target->add_species(new_species);
     
     //TODO: update trophic levels
     double new_trophic_level = target->calculate_trophic_level(new_index);

@@ -1,21 +1,23 @@
 #ifndef SIMULATION_SETTINGS_H_
 #define SIMULATION_SETTINGS_H_
 
+#include <cstddef>
 #include <stdint.h>
 #include <string>
 
 // Contains all settings necessary to run the simulation.
 struct SimulationSettings
 {
-    // Formerly wrongly known as speciation_rate_per_habitat
+    /// @brief Formerly wrongly known as speciation_rate_per_habitat
     uint64_t speciation_rate_per_population;
+    /// @brief Mean difference in bodymass between predator and prey.
     double mean_bodymass_ratio_predator_prey;
     double initial_dispersal_rate;
     double dispersal_variance;
     double zero_crossing;
     double min_feeding_range;
     double max_feeding_range;
-    /// @brief AKA n
+    /// @brief AKA n OR habitat grid length
     size_t grid_length;
     /// @brief AKA l
     size_t dispersal_range;
@@ -25,7 +27,7 @@ struct SimulationSettings
     double predation_parameter;
     /// @brief AKA E0
     double base_gain;
-    /// @brief AKA xi
+    /// @brief AKA ξ
     double competition_parameter;
     /// @brief AKA x
     double trophic_loss;
@@ -89,16 +91,18 @@ struct SimulationSettings
             );
     }
 
-    size_t maximum_species_number()
-    {
-        return 30 * grid_size() + 1001;
-    }
-
     /// @brief AKA n * n = n ^ 2
+    ///
+    /// AKA grid size
     /// @return grid_length squared
-    size_t grid_size()
+    size_t number_of_habitats()
     {
         return grid_length * grid_length;
+    }
+
+    size_t maximum_species_number()
+    {
+        return 30 * number_of_habitats() + 1001;
     }
     
 };
