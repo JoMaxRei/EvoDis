@@ -97,7 +97,7 @@ Simulation::Simulation(SimulationSettings settings, std::string output_path, dou
 
         for (size_t y = 0; y < settings.grid_length; y++)
         {
-            m_foodwebs[x][y] = new Foodweb(resource, x, y);
+            m_foodwebs[x][y] = new Foodweb(resource);
         }
     }
     m_number_of_living_species = 1;

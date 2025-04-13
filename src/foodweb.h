@@ -13,10 +13,9 @@
 class Foodweb
 {
 public:
-    // Creates a new foodweb
-    // @param resource adds a non-extinguishable species to the foodweb
-    // @param id the id of this new foodweb
-    Foodweb(Species *resource, size_t x, size_t y);
+    /// @brief Creates a new foodweb
+    /// @param resource adds a non-extinguishable species to the foodweb
+    Foodweb(Species *resource);
 
     /// @brief returns the number of species in this foodweb, including the resource
     /// @return 
