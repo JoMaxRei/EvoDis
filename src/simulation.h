@@ -96,6 +96,15 @@ private:
     /// @return 
     double random_value();
 
+    /// @brief Prints the current state of the simulation
+    void print();
+
+    /// @brief Prints fitness and habitat of all populations
+    void print_steps();
+
+    /// @brief Prints information about all currently living species
+    void print_species();
+
     gsl_rng *m_generator;
 
     /// @brief Simulation time
@@ -114,24 +123,23 @@ private:
 
     double m_zero_crossing;
 
-    /// @brief current sum of populations
-    ///
-    /// AKA P
-    size_t m_population_count;
-
-
     double m_speciations_per_patch;
 
     Species **m_species;
     /// @brief list of how many populations of a species exist
-    size_t *m_species_count;
+    size_t *m_population_count;
 
-    std::vector<size_t> m_free_indices;
+    /// @brief current sum of all populations
+    ///
+    /// AKA P
+    size_t m_number_of_living_populations;
 
     /// @brief How many different species are in our m_species array
     ///
     /// AKA S
     size_t m_number_of_living_species;
+
+    std::vector<size_t> m_free_indices;
 
     Foodweb ***m_foodwebs;
 

@@ -23,9 +23,9 @@ bool FoodwebCache::can_surive(Foodweb *target, Species *new_species, SimulationS
 {
     size_t new_index = target->add_species(new_species);
     
-    //TODO: update trophic levels
-    double new_trophic_level = target->calculate_trophic_level(new_index);
-    new_species->update_trophic_level(new_trophic_level);
+    // //TODO: ONLY IF INTERESTED IN SPECIES THAT DID NOT SURVIVE AT LEAST ONCE
+    // double new_trophic_level = target->calculate_trophic_level(new_index);
+    // new_species->update_trophic_level(new_trophic_level);
 
     target->calculate(settings);
     if (target->get_fitness(new_index) < 1.0)

@@ -40,12 +40,12 @@ public:
     /// @param random_value 
     /// @return 
     Species* find_species_for_dispersal(double random_value);
-    /// @brief returns a species within this foodweb by its index
+    /// @brief Returns a species within this foodweb by its index
     /// @param index 
     /// @return 
     Species* get_species(size_t index);
     
-    /// @brief checks if the foodweb has reached its maximum size
+    /// @brief Checks if the foodweb has reached its maximum size
     /// @return true if the foodweb is full, false otherwise
     bool is_full() const;
 
@@ -53,8 +53,17 @@ public:
     /// @param settings 
     void calculate(SimulationSettings settings);
 
-    double calculate_trophic_level(size_t index);
+    /// @brief Calculates and updates the trophic levels of the species in this foodweb
+    ///
+    /// this function is only called, if the foodweb is stable
+    /// @param preys Indices of the preys of each species
+    /// @param number_of_preys Number of preys of each species
     void update_trophic_levels(std::vector<std::vector<size_t>> preys, std::vector<size_t> number_of_preys);
+    
+    // ONLY IF INTERESTED IN SPECIES THAT DID NOT SURVIVE AT LEAST ONCE
+    // /// @brief Calculates the trophic level of a single species
+    // /// @param index index of the species in the foodweb
+    // double calculate_trophic_level(size_t index);
     
     /// @brief Returns the fitness of a population
     /// @param index position of the population in the population array of the foodweb

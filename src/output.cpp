@@ -31,7 +31,7 @@ void Output::create_file_names(const std::string &path)
         ,
         "steps" // 1
         ,
-        "living" // 2
+        "living_species_at_steps" // 2
         ,
         "TL" // 3
         ,
@@ -56,19 +56,29 @@ void Output::create_file_names(const std::string &path)
 
 bool Output::create_new_files()
 {
-    bool no_error = true;
+
     for (size_t i = 0; i < OUT_FILE_COUNT; i++)
     {
         file[i].open(names[i]);
         if (!file[i].is_open())
         {
             LOG(ERROR) << "Could not open file: " << names[i];
-            no_error = false;
+            return false;
         }
+        switch (i)
+        {
+        case OUT_STEPS:
+            file[i] << "time" << "\t" << "habitat" << "\t" << "universal_id" << "\t" << "fitness" << std::endl;
+            break;
+
+        default:
+            break;
+        }
+
         file[i].close();
     }
 
-    return no_error;
+    return true;
 }
 
 void Output::open_files()
@@ -199,63 +209,94 @@ void Output::print_settings(resfile_type f, BaseSettings base_settings, Simulati
 {
     if (muted(f))
         return;
-    
+
     bool opend = file[f].is_open();
 
-    if(!opend)
+    if (!opend)
         file[f].open(names[f].c_str(), std::ios::out | std::ios::app);
 
-        file[f] << "===============================================" << std::endl;
-        if(new_simulation)
-            file[f] << "New Simulation" << std::endl;
-        else
-            file[f] << "Loaded Simulation" << std::endl;
+    file[f] << "===============================================" << std::endl;
+    if (new_simulation)
+        file[f] << "New Simulation" << std::endl;
+    else
+        file[f] << "Loaded Simulation" << std::endl;
 
-        file[f] << "===============================================" << std::endl;
-        file[f] << std::endl;
-        // if(load)
-        //   file[f] << "old_path: " << old_path << std::endl;  
-        // file[f] << "path: " << path;
-        // file[f] << std::endl;
-          
-        file[f] << "seed:                      " << settings.seed << std::endl;
-        file[f] << "saves:                     " << base_settings.number_of_saves << std::endl;
-        file[f] << "Speciations per patch:     " << base_settings.speciations_per_patch << std::endl;
-        file[f] << "time between saves:        " << base_settings.save_interval() << std::endl;
-        // if(check)
-        //   file[f] << "bildup_time: " << bildup_time << std::endl;
-        // if(check && (bildup_time >= runtime))
-        //   file[f] << "WARNING: bildup_time >= runtime" << std::endl;
-        file[f] << std::endl;
-        file[f] << "============" << std::endl;
-        file[f] << std::endl;
-        file[f] << "Number of habitats (n²):   " << settings.number_of_habitats() << std::endl;
-        file[f] << "Grid length (n):           " << settings.grid_length << std::endl;
-        file[f] << "Dispersal range (l):       " << settings.dispersal_range << std::endl;
-        if(settings.periodic_boundary_conditions)
-            file[f] << "Boundary conditions:       periodic" << std::endl;
-        else
-            file[f] << "Boundary conditions:       open " << std::endl;
-        file[f] << std::endl;
-        file[f] << "============" << std::endl;
-        file[f] << std::endl;
-        file[f] << "Initial dispersal rate:    " << settings.initial_dispersal_rate << std::endl;
-        file[f] << "Dispersel variance:        " << settings.dispersal_variance << std::endl;
-        file[f] << "Trade-off parameter:       " << settings.zero_crossing << std::endl;
-        file[f] << std::endl;
-        file[f] << "============" << std::endl;
-        file[f] << std::endl;
-        file[f] << "Minimum feeding range:     " << settings.min_feeding_range << std::endl;
-        file[f] << "Maximum feeding range:     " << settings.max_feeding_range << std::endl;
-        file[f] << std::endl;
-        file[f] << "Base gain (E0): " << settings.base_gain << std::endl;
-        file[f] << "Competition parameter (ξ): " << settings.competition_parameter << std::endl;
-        file[f] << "Predation parameter (p):   " << settings.predation_parameter << std::endl;
-        file[f] << "Trophic loss (x):          " << settings.trophic_loss << std::endl;
-        file[f] << std::endl;
-        file[f] << "============" << std::endl;
-        file[f] << std::endl;
+    file[f] << "===============================================" << std::endl;
+    file[f] << std::endl;
+    // if(load)
+    //   file[f] << "old_path: " << old_path << std::endl;
+    // file[f] << "path: " << path;
+    // file[f] << std::endl;
 
+    file[f] << "seed:                      " << settings.seed << std::endl;
+    file[f] << "saves:                     " << base_settings.number_of_saves << std::endl;
+    file[f] << "Speciations per patch:     " << base_settings.speciations_per_patch << std::endl;
+    file[f] << "time between saves:        " << base_settings.save_interval() << std::endl;
+    // if(check)
+    //   file[f] << "bildup_time: " << bildup_time << std::endl;
+    // if(check && (bildup_time >= runtime))
+    //   file[f] << "WARNING: bildup_time >= runtime" << std::endl;
+    file[f] << std::endl;
+    file[f] << "============" << std::endl;
+    file[f] << std::endl;
+    file[f] << "Number of habitats (n²):   " << settings.number_of_habitats() << std::endl;
+    file[f] << "Grid length (n):           " << settings.grid_length << std::endl;
+    file[f] << "Dispersal range (l):       " << settings.dispersal_range << std::endl;
+    if (settings.periodic_boundary_conditions)
+        file[f] << "Boundary conditions:       periodic" << std::endl;
+    else
+        file[f] << "Boundary conditions:       open " << std::endl;
+    file[f] << std::endl;
+    file[f] << "============" << std::endl;
+    file[f] << std::endl;
+    file[f] << "Initial dispersal rate:    " << settings.initial_dispersal_rate << std::endl;
+    file[f] << "Dispersel variance:        " << settings.dispersal_variance << std::endl;
+    file[f] << "Trade-off parameter:       " << settings.zero_crossing << std::endl;
+    file[f] << std::endl;
+    file[f] << "============" << std::endl;
+    file[f] << std::endl;
+    file[f] << "Minimum feeding range:     " << settings.min_feeding_range << std::endl;
+    file[f] << "Maximum feeding range:     " << settings.max_feeding_range << std::endl;
+    file[f] << std::endl;
+    file[f] << "Base gain (E0): " << settings.base_gain << std::endl;
+    file[f] << "Competition parameter (ξ): " << settings.competition_parameter << std::endl;
+    file[f] << "Predation parameter (p):   " << settings.predation_parameter << std::endl;
+    file[f] << "Trophic loss (x):          " << settings.trophic_loss << std::endl;
+    file[f] << std::endl;
+    file[f] << "============" << std::endl;
+    file[f] << std::endl;
+
+    if (!opend)
+        file[f].close();
+}
+
+void Output::print_line_steps(resfile_type f, double time, size_t habitat, uint64_t universal_id, double fitness)
+{
+    if (muted(f))
+        return;
+
+    bool opend = file[f].is_open();
+
+    if (!opend)
+        file[f].open(names[f].c_str(), std::ios::out | std::ios::app);
+
+    file[f] << time << "\t" << habitat << "\t" << universal_id << "\t" << fitness << std::endl;
+
+    if (!opend)
+        file[f].close();
+}
+
+void Output::print_line_species(resfile_type f, double time, uint64_t universal_id, double first_occurence, double bodymass, double feeding_center, double feeding_range, double dispersal_rate, double predator_strength, size_t population_count, double mean_trophic_level)
+{
+    if (muted(f))
+        return;
+    
+    bool opend = file[f].is_open();
+    
+    if(!opend)
+        file[f].open(names[f].c_str(), std::ios::out | std::ios::app);
+    
+    file[f] << time << "\t" << universal_id << "\t" << first_occurence << "\t" << bodymass << "\t" << feeding_center << "\t" << feeding_range << "\t" << dispersal_rate << "\t" << predator_strength << "\t" << population_count << "\t" << mean_trophic_level << std::endl;
     
     if(!opend)
         file[f].close();

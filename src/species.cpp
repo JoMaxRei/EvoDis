@@ -30,3 +30,8 @@ void Species::update_trophic_level(double level)
 {
     m_trophic_level << level;
 }
+
+double Species::get_trophic_level() const
+{
+    return m_trophic_level.get_mean();
+}

@@ -35,6 +35,10 @@ public:
     /// @brief updates the trophic level of this species
     void update_trophic_level(double level);
 
+    /// @brief returns the mean trophic level of this species over time
+    double get_trophic_level() const;
+    
+
 private:
     /// @brief Sum and number of all trophic levels this species ever had after a foodweb was stable
     Eval m_trophic_level;

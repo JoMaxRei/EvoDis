@@ -112,11 +112,6 @@ bool Foodweb::is_full() const
     return false;
 }
 
-double Foodweb::calculate_trophic_level(size_t index)
-{
-    return 0.0;
-}
-
 void Foodweb::calculate(SimulationSettings settings)
 {
     // LOG(DEBUG) << " - START";
@@ -219,6 +214,11 @@ void Foodweb::update_trophic_levels(std::vector<std::vector<size_t>> preys, std:
         m_species[j]->update_trophic_level(TL_mean_preys[j]);
     }
 }
+
+// double Foodweb::calculate_trophic_level(size_t index)
+// {
+//     return 0.0;
+// }
 
 double Foodweb::get_fitness(size_t index) const
 {

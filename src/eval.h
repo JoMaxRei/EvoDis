@@ -29,7 +29,7 @@ public:
   /// @brief Resets the Eval to n = 0 and sum = 0
   void reset();
   /// @brief Returns the mean of the samples
-  double get_mean();
+  double get_mean() const;
 
   // double get_variance();
 

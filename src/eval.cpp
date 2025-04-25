@@ -11,7 +11,7 @@ Eval::~Eval()
   return;
 }
 
-double Eval::get_mean()
+double Eval::get_mean() const
 {
   if(n > 0)
     return sum/static_cast<double>(n);

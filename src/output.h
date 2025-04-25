@@ -24,7 +24,7 @@ public:
     enum resfile_type {
         OUT_SETTINGS      // 0
       , OUT_STEPS         // 1
-      , OUT_LIVING        // 2
+      , OUT_SPECIES       // 2
       , OUT_TL            // 3
       , OUT_TL_ALL        // 4
       , OUT_GLOBAL_INFO   // 5
@@ -75,7 +75,29 @@ public:
     /// @param new_simulation true if the simulation is a new one, false if it is loaded from file
     void print_settings(resfile_type f, BaseSettings base_settings, SimulationSettings settings, bool new_simulation);
 
-private:    
+    /// @brief Prints fitness and habitat of a population
+    /// @param f OUT_STEPS
+    /// @param time current time of the simulation
+    /// @param habitat current habitat
+    /// @param universal_id species of the population
+    /// @param fitness fitness of the population
+    void print_line_steps(resfile_type f, double time, size_t habitat, uint64_t universal_id, double fitness);
+
+    /// @brief Prints all information about a species
+    /// @param f OUT_SPECIES (FKA OUT_LIVING)
+    /// @param time current time of the simulation
+    /// @param universal_id universal id of the species
+    /// @param first_occurence first occurence of the species
+    /// @param bodymass bodymass of the species
+    /// @param feeding_center feeding center of the species
+    /// @param feeding_range feeding range of the species
+    /// @param dispersal_rate disersal rate of the species
+    /// @param predator_strength predator strength of the species
+    /// @param population_count number of habitats the species populates at the current time
+    /// @param mean_trophic_level mean trophic level of all populations of the species in stable foodwebs
+    void print_line_species(resfile_type f, double time, uint64_t universal_id, double first_occurence, double bodymass, double feeding_center, double feeding_range, double dispersal_rate, double predator_strength, size_t population_count, double mean_trophic_level);
+
+private:
 
     /// @brief Creates the names of the output files
     /// @param path path to the output file
