@@ -28,5 +28,5 @@ void Species::set_position(size_t position_in_array)
 
 void Species::update_trophic_level(double level)
 {
-
+    m_trophic_level << level;
 }

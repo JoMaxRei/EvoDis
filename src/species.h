@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <cstddef>
+#include "eval.h"
 
 class Species
 {
@@ -20,6 +21,7 @@ public:
     double m_bodymass;
     double m_feeding_center;
     double m_feeding_range;
+    /// @brief AKA u
     double m_predator_strength;
     double m_first_occurence;
     uint64_t m_dispersal_rate;
@@ -29,7 +31,13 @@ public:
     size_t m_position_in_array;
 
     void set_position(size_t m_position_in_array);
+
+    /// @brief updates the trophic level of this species
     void update_trophic_level(double level);
+
+private:
+    /// @brief Sum and number of all trophic levels this species ever had after a foodweb was stable
+    Eval m_trophic_level;
 };
 
 #endif

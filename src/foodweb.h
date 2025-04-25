@@ -44,11 +44,21 @@ public:
     /// @param index 
     /// @return 
     Species* get_species(size_t index);
+    
+    /// @brief checks if the foodweb has reached its maximum size
+    /// @return true if the foodweb is full, false otherwise
     bool is_full() const;
-    double calculate_trophic_level(size_t index);
+
     /// @brief Calculates the whole foodweb
     /// @param settings 
     void calculate(SimulationSettings settings);
+
+    double calculate_trophic_level(size_t index);
+    void update_trophic_levels(std::vector<std::vector<size_t>> preys, std::vector<size_t> number_of_preys);
+    
+    /// @brief Returns the fitness of a population
+    /// @param index position of the population in the population array of the foodweb
+    /// @return fitness of the population
     double get_fitness(size_t index) const;
 
     /// @brief Sets index to the index of the species with the lowest fitness, if below 1.0
@@ -70,7 +80,7 @@ private:
     /// @param[in,out] epsilon 
     void calculate_feeding_relationships(
         std::vector<std::vector<size_t>> &preys
-        , std::vector<int> &number_of_preys
+        , std::vector<size_t> &number_of_preys
         , std::vector<std::vector<double>> &epsilon
         );
 
@@ -78,6 +88,8 @@ private:
     Species **m_species;
 
     /// @brief number of species on this habitat
+    ///
+    /// FKA dim
     size_t m_species_count;
     double *m_fitness;
     

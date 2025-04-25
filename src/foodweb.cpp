@@ -55,7 +55,7 @@ void Foodweb::remove_species(size_t index)
     m_species_count -= 1;
     m_local_dispersal_rate -= m_species[index]->m_dispersal_rate;
 
-    for(size_t i = index; i < m_species_count; i++)
+    for (size_t i = index; i < m_species_count; i++)
     {
         m_species[i] = m_species[i + 1];
     }
@@ -89,7 +89,6 @@ Species *Foodweb::find_species_for_dispersal(double random_value)
             // LOG(DEBUG) << "First occurence of this species is: " << m_species[i]->m_first_occurence;
             return m_species[i];
         }
-        
     }
     // LOG(DEBUG) << "No species found for dispersal";
     return NULL;
@@ -128,13 +127,13 @@ void Foodweb::calculate(SimulationSettings settings)
         return;
     }
 
-    std::vector<std::vector<size_t>> preys (m_species_count, std::vector<size_t>{});
-    std::vector<int> number_of_preys (m_species_count, 0);
-    std::vector<std::vector<double>> epsilon (m_species_count, std::vector<double>{});
+    std::vector<std::vector<size_t>> preys(m_species_count, std::vector<size_t>{});
+    std::vector<size_t> number_of_preys(m_species_count, 0);
+    std::vector<std::vector<double>> epsilon(m_species_count, std::vector<double>{});
 
     calculate_feeding_relationships(preys, number_of_preys, epsilon);
 
-    std::vector<double> sigma (m_species_count, 0.0);
+    std::vector<double> sigma(m_species_count, 0.0);
 
     for (size_t predator_index = 1; predator_index < m_species_count; predator_index++)
     {
@@ -144,17 +143,16 @@ void Foodweb::calculate(SimulationSettings settings)
         }
     }
 
-    std::vector<double> predation_loss (m_species_count, 0.0);
-    for(size_t index = 0; index < m_species_count; index++)
+    std::vector<double> predation_loss(m_species_count, 0.0);
+    for (size_t index = 0; index < m_species_count; index++)
     {
         predation_loss[index] = (settings.predation_parameter * sigma[index]) / (1.0 + settings.predation_parameter * sigma[index]);
     }
 
-    std::vector<double> E (m_species_count, 0.0);
+    std::vector<double> E(m_species_count, 0.0);
     E[0] = settings.base_gain;
     std::vector<double> E_tilde = E;
 
-    
     for (size_t predator_index = 1; predator_index < m_species_count; predator_index++)
     {
         for (size_t prey_index = 0; prey_index < number_of_preys[predator_index]; prey_index++)
@@ -162,22 +160,64 @@ void Foodweb::calculate(SimulationSettings settings)
             size_t current_prey_index = preys[predator_index][prey_index];
             double gain = E_tilde[current_prey_index] * predation_loss[current_prey_index] * epsilon[predator_index][prey_index] / sigma[current_prey_index];
             E_tilde[predator_index] += gain;
-            E[predator_index] += gain / ( 1.0 + settings.competition_parameter * (sigma[current_prey_index] - epsilon[predator_index][prey_index]));
+            E[predator_index] += gain / (1.0 + settings.competition_parameter * (sigma[current_prey_index] - epsilon[predator_index][prey_index]));
         }
 
         E_tilde[predator_index] *= settings.trophic_loss;
         E[predator_index] *= settings.trophic_loss;
     }
 
-    for(size_t index = 1; index < m_species_count; index++)
+    bool staple = true;
+
+    for (size_t index = 1; index < m_species_count; index++)
     {
-        m_fitness[index] = 1.0 / ( predation_loss[index] + 1.0 / E[index]);
+        m_fitness[index] = 1.0 / (predation_loss[index] + 1.0 / E[index]);
         // LOG(DEBUG) << "Fitness for " << index << " is " << m_fitness[index];
+        if (m_fitness[index] < 1.0)
+        {
+            staple = false;
+        }
+    }
+
+    // LOG(DEBUG) << "Staple is " << staple;
+
+    if (staple)
+    {
+        update_trophic_levels(preys, number_of_preys);
     }
 
     calculated = true;
 
     // LOG(DEBUG) << " - END";
+}
+
+void Foodweb::update_trophic_levels(std::vector<std::vector<size_t>> preys, std::vector<size_t> number_of_preys)
+{
+    // std::vector<double> TL_shortest_Path(m_species_count, 0.0);
+    
+    std::vector<double> TL_mean_preys(m_species_count, 0.0);
+
+    for (size_t j = 1; j < m_species_count; j++)
+    {
+        // double min = TL_shortest_Path[preys[j][0]];
+        double mean = TL_mean_preys[preys[j][0]];
+
+        // starting from 1 because 0 is already set above
+        for (size_t i = 1; i < number_of_preys[j]; i++)
+        {
+            // if (TL_shortest_Path[preys[j][i]] < min)
+            //     min = TL_shortest_Path[preys[j][i]];
+            mean += TL_mean_preys[preys[j][i]];
+        }
+
+        mean /= number_of_preys[j];
+
+        // TL_shortest_Path[j] = min + 1.0;
+        TL_mean_preys[j] = mean + 1.0;
+
+        // species[j]->update_trophic_level(TL_shortest_Path[j]);
+        m_species[j]->update_trophic_level(TL_mean_preys[j]);
+    }
 }
 
 double Foodweb::get_fitness(size_t index) const
@@ -186,16 +226,13 @@ double Foodweb::get_fitness(size_t index) const
 }
 
 void Foodweb::calculate_feeding_relationships(
-    std::vector<std::vector<size_t>> &preys
-    , std::vector<int> &number_of_preys
-    , std::vector<std::vector<double>> &epsilon
-)
+    std::vector<std::vector<size_t>> &preys, std::vector<size_t> &number_of_preys, std::vector<std::vector<double>> &epsilon)
 {
     // LOG(DEBUG) << " - START";
-    for(size_t predator_index = 1; predator_index < m_species_count; predator_index++)
+    for (size_t predator_index = 1; predator_index < m_species_count; predator_index++)
     {
         Species *predator = m_species[predator_index];
-        for(size_t prey_index =0; prey_index < predator_index; prey_index++)
+        for (size_t prey_index = 0; prey_index < predator_index; prey_index++)
         {
             Species *prey = m_species[prey_index];
 
@@ -222,9 +259,9 @@ void Foodweb::calculate_feeding_relationships(
 bool Foodweb::determine_dying(size_t &index)
 {
     double min_fitness = 1.0;
-    for(size_t i = 1; i < m_species_count; i++)
+    for (size_t i = 1; i < m_species_count; i++)
     {
-        if(m_fitness[i] < min_fitness)
+        if (m_fitness[i] < min_fitness)
         {
             min_fitness = m_fitness[i];
             index = i;
