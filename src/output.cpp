@@ -71,6 +71,11 @@ bool Output::create_new_files()
             file[i] << "time" << "\t" << "habitat" << "\t" << "universal_id" << "\t" << "fitness" << std::endl;
             break;
 
+        case OUT_LIVING_SPECIES:
+            file[i] << "time" << "\t" << "universal_id" << "\t" << "first_occurence" << "\t" << "bodymass" << "\t" << "feeding_center" << "\t" << "feeding_range" << "\t" << "dispersal_rate" << "\t" << "predator_strength" << "\t" << "population_count" << "\t" << "mean_trophic_level" << std::endl;
+            
+            break;
+
         default:
             break;
         }

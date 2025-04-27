@@ -13,8 +13,8 @@ public:
         double feeding_center = 0.0,
         double feeding_range = 1.0,
         double predator_strength = 1.0,
+        uint64_t dispersal_rate = 0,
         double first_occurence = 0.0,
-        uint64_t dispersal_rate = 1,
         uint64_t universal_id = 0
         );
 

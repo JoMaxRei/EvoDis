@@ -22,17 +22,17 @@ public:
 
     /// @brief Access to the individual output files
     enum resfile_type {
-        OUT_SETTINGS      // 0
-      , OUT_STEPS         // 1
-      , OUT_SPECIES       // 2
-      , OUT_TL            // 3
-      , OUT_TL_ALL        // 4
-      , OUT_GLOBAL_INFO   // 5
-      , OUT_ALIVE         // 6
-      , OUT_LIFETIME      // 7
-      , OUT_LTD_SLOPE     // 8
-      , OUT_ABORT         // 9
-      , OUT_FILE_COUNT    // 10
+        OUT_SETTINGS        // 0
+      , OUT_STEPS           // 1
+      , OUT_LIVING_SPECIES  // 2
+      , OUT_TL              // 3
+      , OUT_TL_ALL          // 4
+      , OUT_GLOBAL_INFO     // 5
+      , OUT_ALIVE           // 6
+      , OUT_LIFETIME        // 7
+      , OUT_LTD_SLOPE       // 8
+      , OUT_ABORT           // 9
+      , OUT_FILE_COUNT      // 10
     };
 
     /// @brief Creates new output files

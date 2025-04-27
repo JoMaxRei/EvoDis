@@ -13,8 +13,8 @@ Eval::~Eval()
 
 double Eval::get_mean() const
 {
-  if(n > 0)
-    return sum/static_cast<double>(n);
+  if (n > 0)
+    return sum / static_cast<double>(n);
   return 0.0;
 }
 
@@ -25,7 +25,6 @@ double Eval::get_mean() const
 //   return 0.0;
 // }
 
-
 void Eval::reset()
 {
   n = 0;
@@ -33,15 +32,13 @@ void Eval::reset()
   // sum_sqr = 0.0;
 }
 
-
-Eval& Eval::operator<<(const double d)
+Eval &Eval::operator<<(const double d)
 {
   n++;
   sum += d;
   // sum_sqr += d*d;
   return *this;
 }
-
 
 // Eval& Eval::operator<<(const my_pair p)
 // {

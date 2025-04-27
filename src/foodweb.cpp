@@ -6,8 +6,9 @@
 Foodweb::Foodweb(Species *resource)
 {
     m_species = new Species *[MAX_DIM];
-    m_fitness = new double[MAX_DIM];
     m_species[0] = resource;
+    m_fitness = new double[MAX_DIM];
+    m_fitness[0] = 0.0;
     m_species_count = 1;
     m_local_dispersal_rate = 0;
 }
@@ -172,6 +173,11 @@ void Foodweb::calculate(SimulationSettings settings)
         {
             staple = false;
         }
+
+        // if(m_species[index]->m_universal_id == 85)
+        // {
+        //     LOG(DEBUG) << "Fitness for " << index << " is " << m_fitness[index];
+        // }
     }
 
     // LOG(DEBUG) << "Staple is " << staple;
@@ -236,12 +242,19 @@ void Foodweb::calculate_feeding_relationships(
         {
             Species *prey = m_species[prey_index];
 
-            double relative_difference = abs(prey->m_bodymass - predator->m_feeding_center) / predator->m_feeding_range;
+            double relative_difference = std::abs(prey->m_bodymass - predator->m_feeding_center) / predator->m_feeding_range;
 
             if (relative_difference < 1.0)
             {
                 preys[predator_index].push_back(prey_index);
                 number_of_preys[predator_index] += 1;
+
+
+
+                if(m_species[predator_index]->m_universal_id == 85)
+                {
+                    LOG(DEBUG) << "Species " << m_species[predator_index]->m_universal_id <<  " feeds on " << m_species[prey_index]->m_universal_id;
+                }
 
                 double predation_strength = INVERTED_SQRT_HALF_PI * predator->m_predator_strength * exp(-2.0 * relative_difference * relative_difference);
                 epsilon[predator_index].push_back(predation_strength);

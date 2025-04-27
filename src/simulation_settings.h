@@ -73,21 +73,21 @@ struct SimulationSettings
     static const SimulationSettings DEFAULT()
     {
         return SimulationSettings(
-            1000000 //speciation_rate_per_population
-            , 2.0 //mean_bodymass_ratio_predator_prey
-            , 10.0 //initial_dispersal_rate
-            , 0.3 //dispersal_variance
-            , 1e5 //zero_crossing
-            , 0.2 //min_feeding_range
-            , 2.0 //max_feeding_range
-            , 5 // grid length
-            , 1 // dispersal range
-            , true // periodic boundary conditions
-            , 0 // seed
-            , 1.0 // predation parameter
-            , 1000.0 // base gain
-            , 3.0 // competition parameter
-            , 0.4 // trophic loss
+            1000000     // speciation_rate_per_population
+            , 2.0       // mean_bodymass_ratio_predator_prey
+            , 10.0      // initial_dispersal_rate
+            , 0.3       // dispersal_variance
+            , 1e5       // zero_crossing
+            , 0.2       // min_feeding_range
+            , 2.0       // max_feeding_range
+            , 5         // grid length
+            , 1         // dispersal range
+            , true      // periodic boundary conditions
+            , 0         // seed
+            , 1.0       // predation parameter
+            , 1000.0    // base gain
+            , 3.0       // competition parameter
+            , 0.4       // trophic loss
             );
     }
 

@@ -16,11 +16,11 @@ class Simulation
 public:
     // public constructor - will return a non-functional simulation
     Simulation();
-    /// @brief formerly known as init - will return a new simulation from the given settings
+    /// @brief FKA init - will return a new simulation from the given settings
     /// @param base_settings 
     /// @param settings 
     Simulation(BaseSettings base_settings, SimulationSettings settings);
-    /// @brief will return a simulation loaded from the file
+    /// @brief FKA load - will return a simulation loaded from the file
     /// @param base_settings 
     /// @param path path to load from
     Simulation(BaseSettings base_settings, std::string path);
@@ -29,7 +29,7 @@ public:
     int m_result;
 
 private:
-    // formerly known as basic init
+    /// @brief FKA basic init
     Simulation(SimulationSettings settings, std::string output_path, double speciations_per_patch);
     
     void create_folder(std::string path);
@@ -93,8 +93,9 @@ private:
     void die(size_t global_index);
 
     /// @brief returns a random value between 0.0 and 1.0 (exclusive)
-    /// @return 
     double random_value();
+    /// @brief returns a random value with μ = 0 and σ = 1
+    double random_normal();
 
     /// @brief Prints the current state of the simulation
     void print();
@@ -109,6 +110,9 @@ private:
 
     /// @brief Simulation time
     double m_t;
+
+    /// @brief Counts the number of speciations that took place
+    uint64_t m_speciation_counter;
 
     /// @brief Saving interval
     double m_save_interval;
@@ -145,7 +149,6 @@ private:
 
     Output *m_output;
 
-private:
     enum ErrorCodes
     {
         WebNotFound = 1

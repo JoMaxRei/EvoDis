@@ -21,10 +21,10 @@ public:
     /// @return 
     size_t get_dimension() const;
 
-    /// @brief Adds a species to the foodweb
+    /// @brief Adds a species to the foodweb, sorted by bodymass
     ///
     /// Also increments m_species_count and m_local_dispersal_rate
-    /// @return -1 if maximum species in this web was exceeded, position of the species otherwise
+    /// @return position of the species or -1 if maximum species in this web was exceeded
     size_t add_species(Species *species);
     /// @brief Removes a species from the foodweb.
     ///

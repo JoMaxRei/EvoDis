@@ -17,7 +17,7 @@ public:
   Eval();  // constructor
   ~Eval(); // destructor
 
-  /// @brief Returns the number of samples 
+  /// @brief Returns the number of samples
   uint64_t get_n() { return n; };
   /// @brief Returns the sum of the samples
   double get_sum() { return sum; };
@@ -35,7 +35,7 @@ public:
 
   /// @brief Adds a sample to the Eval, raising n by 1
   Eval &operator<<(const double d);
-  
+
   // Eval& operator<<(const my_pair p);
 };
 

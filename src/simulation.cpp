@@ -13,7 +13,6 @@ Simulation::Simulation() : m_result(-1), m_settings(SimulationSettings::DEFAULT(
 {
 }
 
-// new simulation AKA init
 Simulation::Simulation(BaseSettings base_settings, SimulationSettings settings) : Simulation(settings, base_settings.output_path, base_settings.speciations_per_patch)
 {
     m_t = 0.0;
@@ -36,13 +35,17 @@ Simulation::Simulation(BaseSettings base_settings, SimulationSettings settings) 
 
     m_population_count[1] = settings.number_of_habitats();
     m_species[1] = new Species(
-        2.0,
-        0.0,
-        (settings.min_feeding_range + settings.max_feeding_range) / 2.0,
-        calculate_predator_strength(m_initial_dispersal_rate),
-        0.0,
-        static_cast<uint64_t>(m_initial_dispersal_rate),
-        1);
+        2.0,                                                                // bodymass
+        0.0,                                                                // feeding center     
+        (settings.min_feeding_range + settings.max_feeding_range) / 2.0,    // feeding range
+        calculate_predator_strength(m_initial_dispersal_rate),              // predator strength
+        static_cast<uint64_t>(m_initial_dispersal_rate),                    // dispersal rate
+        0.0,                                                                // first occurence
+        1                                                                   // universal id
+    );
+
+    m_speciation_counter = 1;
+
     size_t next_index = m_free_indices.back();
     m_free_indices.pop_back();
     m_species[1]->set_position(next_index);
@@ -87,7 +90,15 @@ Simulation::Simulation(SimulationSettings settings, std::string output_path, dou
     m_population_count = new size_t[settings.maximum_species_number()]{0};
 
     m_population_count[0] = settings.number_of_habitats();
-    Species *resource = new Species(0.0, -1.0, 0.0, 0.0, 0.0, 0, 0);
+    Species *resource = new Species(
+        0.0,    // bodymass
+        -1.0,   // feeding center
+        0.0,    // feeding range
+        0.0,    // predator strength
+        0,      // dispersal rate
+        0.0,    // first occurence
+        0       // universal id
+    );
     resource->set_position(0);
     m_species[0] = resource;
 
@@ -253,6 +264,27 @@ bool Simulation::handle_dispersal(size_t &x, size_t &y)
     }
 
     find_target_habitat_for_dispersal(x, y);
+
+    for(size_t i = 1; i < m_foodwebs[x][y]->get_dimension(); i++)
+    {
+        if(m_foodwebs[x][y]->get_species(i)->m_universal_id == dispersing_species->m_universal_id)
+        {
+            // LOG(DEBUG) << "Dispersal failed, species already exists";
+            // counter_inbound++;
+            // if(global_species[chosen_id]->universal_id == 1)
+            // {
+            //     counter_inbound_S1++;
+            // }
+            return false;
+        }
+
+        if(m_foodwebs[x][y]->get_species(i)->m_bodymass > dispersing_species->m_bodymass)
+        {
+            break;
+        }
+
+    }
+
     if (m_foodwebs[x][y]->is_full())
     {
         throw Exception("Foodweb is full", static_cast<int>(ErrorCodes::FoodwebFull));
@@ -368,24 +400,22 @@ void Simulation::find_target_habitat_for_dispersal(size_t &x, size_t &y)
 
 Species *Simulation::speciate(Species *parent)
 {
+    m_speciation_counter++;
+
     double new_bodymass = parent->m_bodymass + 2.0 * log10(5.0) * (random_value() - 0.5);
     if (new_bodymass <= 0.0)
     {
         return NULL;
     }
 
+    double new_feeding_range = m_settings.min_feeding_range + random_value() * (m_settings.max_feeding_range - m_settings.min_feeding_range);
     double new_feeding_center;
-    double new_feeding_range;
 
     do
     {
-        do
-        {
-            new_feeding_center = new_bodymass - m_settings.mean_bodymass_ratio_predator_prey + gsl_ran_gaussian(m_generator, 1);
-        } while (new_feeding_center - m_settings.max_feeding_range > new_bodymass);
+        new_feeding_center = new_bodymass - m_settings.mean_bodymass_ratio_predator_prey + random_normal();
+    } while (new_feeding_center > new_bodymass - new_feeding_range);
 
-        new_feeding_range = m_settings.min_feeding_range + random_value() * (m_settings.max_feeding_range - m_settings.min_feeding_range);
-    } while (new_feeding_center - new_feeding_range > new_bodymass);
 
     double new_dispersal_rate_min = log2(static_cast<double>(parent->m_dispersal_rate) / (1.0 + m_settings.dispersal_variance));
     double new_dispersal_rate_max = log2(static_cast<double>(parent->m_dispersal_rate) * (1.0 + m_settings.dispersal_variance));
@@ -394,7 +424,14 @@ Species *Simulation::speciate(Species *parent)
     double new_predator_strength = calculate_predator_strength(new_dispersal_rate);
 
     return new Species(
-        new_bodymass, new_feeding_center, new_feeding_range, new_predator_strength, m_t, static_cast<uint64_t>(new_dispersal_rate));
+        new_bodymass,                               // bodymass
+        new_feeding_center,                         // feeding center    
+        new_feeding_range,                          // feeding range
+        new_predator_strength,                      // predator strength
+        static_cast<uint64_t>(new_dispersal_rate),  // dispersal rate
+        m_t,                                        // first occurence
+        m_speciation_counter                        // universal id
+    );
 }
 
 void Simulation::die(size_t global_index)
@@ -427,18 +464,33 @@ double Simulation::random_value()
     return gsl_rng_uniform(m_generator);
 }
 
+double Simulation::random_normal()
+{
+    return gsl_ran_gaussian(m_generator, 1);
+}
+
 void Simulation::print()
 {
-    LOG(INFO) << m_t << " - print";
+    LOG(INFO) << m_t << " - start printing";
 
+    LOG(DEBUG) << m_t << " - Species on first habitat: ";
+    for (size_t i = 0; i < m_foodwebs[0][0]->get_dimension(); i++)
+    {
+        LOG(DEBUG) << m_foodwebs[0][0]->get_species(i)->m_universal_id  << " - " << m_foodwebs[0][0]->get_species(i)->m_bodymass << " - " << m_foodwebs[0][0]->get_species(i)->m_feeding_center << " - " << m_foodwebs[0][0]->get_species(i)->m_feeding_range << " - " << m_foodwebs[0][0]->get_fitness(i);
+    }
+    
     print_steps();
+
+    print_species();
+
+    LOG(INFO) << m_t << " - end printing";
 }
 
 void Simulation::print_steps()
 {
     if (!m_output->muted(Output::OUT_STEPS))
     {
-        LOG(INFO) << m_t << " - print_steps";
+        LOG(INFO) << "print_steps";
 
         // Calculate all foodwebs. Only needed if foodweb_cache is fully implemented. Otherwise each foodweb is already calculated
         // calculate();
@@ -450,7 +502,12 @@ void Simulation::print_steps()
             {
                 for (size_t k = 0; k < m_foodwebs[i][j]->get_dimension(); k++)
                 {
-                    m_output->print_line_steps(Output::OUT_STEPS, m_t, i * m_settings.grid_length + j, m_foodwebs[i][j]->get_species(k)->m_universal_id, m_foodwebs[i][j]->get_fitness(k));
+                    m_output->print_line_steps(Output::OUT_STEPS,
+                         m_t,
+                         i * m_settings.grid_length + j,
+                         m_foodwebs[i][j]->get_species(k)->m_universal_id,
+                         m_foodwebs[i][j]->get_fitness(k)
+                    );
                 }
             }
         }
@@ -461,19 +518,30 @@ void Simulation::print_steps()
 
 void Simulation::print_species()
 {
-    if (!m_output->muted(Output::OUT_SPECIES))
+    if (!m_output->muted(Output::OUT_LIVING_SPECIES))
     {
-        LOG(INFO) << m_t << " - print_species";
+        LOG(INFO) << "print_species";
 
         size_t test_number_of_species = 0;
 
-        m_output->open_file(Output::OUT_SPECIES);
+        m_output->open_file(Output::OUT_LIVING_SPECIES);
         for (size_t i = 0; i < m_settings.maximum_species_number(); i++)
         {
             if (m_species[i] != NULL)
             {
                 test_number_of_species++;
-                m_output->print_line_species(Output::OUT_SPECIES, m_t, m_species[i]->m_universal_id, m_species[i]->m_first_occurence, m_species[i]->m_bodymass, m_species[i]->m_feeding_center, m_species[i]->m_feeding_range, m_species[i]->m_dispersal_rate, m_species[i]->m_predator_strength, m_population_count[i], m_species[i]->get_trophic_level());   
+                m_output->print_line_species(Output::OUT_LIVING_SPECIES,
+                    m_t,
+                    m_species[i]->m_universal_id,
+                    m_species[i]->m_first_occurence,
+                    m_species[i]->m_bodymass,
+                    m_species[i]->m_feeding_center,
+                    m_species[i]->m_feeding_range,
+                    static_cast<double>(m_species[i]->m_dispersal_rate) / static_cast<double>(m_settings.speciation_rate_per_population),
+                    m_species[i]->m_predator_strength,
+                    m_population_count[i],
+                    m_species[i]->get_trophic_level()
+                );   
             }
 
         }
@@ -483,6 +551,6 @@ void Simulation::print_species()
             LOG(ERROR) << "Number of species in simulation: " << m_number_of_living_species << ", number of species in output: " << test_number_of_species;
         }
             
-        m_output->close_file(Output::OUT_SPECIES);
+        m_output->close_file(Output::OUT_LIVING_SPECIES);
     }
 }

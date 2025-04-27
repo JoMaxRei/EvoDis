@@ -10,8 +10,9 @@ find_package(GSL REQUIRED)
 include_directories(${GSL_INCLUDE_DIRS})
 link_directories(${GSL_LIBRARY_DIRS})
 
-file(GLOB SOURCES "src/*.*")
+file(GLOB SOURCES "src/*.cpp*" "src/*.cc")
 add_executable(EvoDis ${SOURCES})
+
 
 target_link_libraries(EvoDis GSL::gsl GSL::gslcblas)
 get_target_property(GSL_DLL_PATH GSL::gsl IMPORTED_LOCATION)
