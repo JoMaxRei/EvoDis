@@ -9,8 +9,12 @@ Foodweb::Foodweb(Species *resource)
     m_species[0] = resource;
     m_fitness = new double[MAX_DIM];
     m_fitness[0] = 0.0;
+    m_trophic_level = new double[MAX_DIM];
+    m_trophic_level[0] = 0.0;
     m_species_count = 1;
     m_local_dispersal_rate = 0;
+
+    calculated = true;
 }
 
 size_t Foodweb::get_dimension() const
@@ -45,6 +49,9 @@ size_t Foodweb::add_species(Species *species)
     m_species_count += 1;
 
     m_local_dispersal_rate += species->m_dispersal_rate;
+
+    m_fitness[position_in_foodweb] = -1.0;
+    m_trophic_level[position_in_foodweb] = -1.0;
 
     calculated = false;
 
@@ -173,11 +180,6 @@ void Foodweb::calculate(SimulationSettings settings)
         {
             staple = false;
         }
-
-        // if(m_species[index]->m_universal_id == 85)
-        // {
-        //     LOG(DEBUG) << "Fitness for " << index << " is " << m_fitness[index];
-        // }
     }
 
     // LOG(DEBUG) << "Staple is " << staple;
@@ -195,7 +197,7 @@ void Foodweb::calculate(SimulationSettings settings)
 void Foodweb::update_trophic_levels(std::vector<std::vector<size_t>> preys, std::vector<size_t> number_of_preys)
 {
     // std::vector<double> TL_shortest_Path(m_species_count, 0.0);
-    
+
     std::vector<double> TL_mean_preys(m_species_count, 0.0);
 
     for (size_t j = 1; j < m_species_count; j++)
@@ -204,6 +206,7 @@ void Foodweb::update_trophic_levels(std::vector<std::vector<size_t>> preys, std:
         double mean = TL_mean_preys[preys[j][0]];
 
         // starting from 1 because 0 is already set above
+        // this is done because for shortest path a comparison is needed
         for (size_t i = 1; i < number_of_preys[j]; i++)
         {
             // if (TL_shortest_Path[preys[j][i]] < min)
@@ -216,6 +219,7 @@ void Foodweb::update_trophic_levels(std::vector<std::vector<size_t>> preys, std:
         // TL_shortest_Path[j] = min + 1.0;
         TL_mean_preys[j] = mean + 1.0;
 
+        m_trophic_level[j] = TL_mean_preys[j];
         // species[j]->update_trophic_level(TL_shortest_Path[j]);
         m_species[j]->update_trophic_level(TL_mean_preys[j]);
     }
@@ -228,7 +232,65 @@ void Foodweb::update_trophic_levels(std::vector<std::vector<size_t>> preys, std:
 
 double Foodweb::get_fitness(size_t index) const
 {
+    if (!calculated)
+    {
+        LOG(WARNING) << "Foodweb is not calculated";
+    }
+
     return m_fitness[index];
+}
+
+double Foodweb::get_trophic_level(size_t index) const
+{
+    if (!calculated)
+    {
+        LOG(WARNING) << "Foodweb is not calculated";
+    }
+
+    return m_trophic_level[index];
+}
+
+double Foodweb::get_mean_trophic_level() const
+{
+    if (!calculated)
+    {
+        LOG(WARNING) << "Foodweb is not calculated";
+    }
+
+    if (m_species_count == 0)
+    {
+        return 0.0;
+    }
+
+    double sum = 0.0;
+    for (size_t i = 0; i < m_species_count; ++i)
+    {
+        sum += m_trophic_level[i];
+    }
+    return sum / static_cast<double>(m_species_count - 1);
+}
+
+double Foodweb::get_max_trophic_level() const
+{
+    if (!calculated)
+    {
+        LOG(WARNING) << "Foodweb is not calculated";
+    }
+
+    if (m_species_count == 0)
+    {
+        return 0.0;
+    }
+
+    double maximum = m_trophic_level[0];
+    for (size_t i = 1; i < m_species_count; ++i)
+    {
+        if (m_trophic_level[i] > maximum)
+        {
+            maximum = m_trophic_level[i];
+        }
+    }
+    return maximum;
 }
 
 void Foodweb::calculate_feeding_relationships(
@@ -248,13 +310,6 @@ void Foodweb::calculate_feeding_relationships(
             {
                 preys[predator_index].push_back(prey_index);
                 number_of_preys[predator_index] += 1;
-
-
-
-                if(m_species[predator_index]->m_universal_id == 85)
-                {
-                    LOG(DEBUG) << "Species " << m_species[predator_index]->m_universal_id <<  " feeds on " << m_species[prey_index]->m_universal_id;
-                }
 
                 double predation_strength = INVERTED_SQRT_HALF_PI * predator->m_predator_strength * exp(-2.0 * relative_difference * relative_difference);
                 epsilon[predator_index].push_back(predation_strength);
@@ -282,4 +337,30 @@ bool Foodweb::determine_dying(size_t &index)
     }
 
     return min_fitness < 1.0;
+}
+
+bool Foodweb::save_state()
+{
+    if (!calculated) 
+    {
+        LOG(WARNING) << "Foodweb is not calculated";
+        return false;
+    }
+
+    saved_fitness.assign(m_fitness, m_fitness + m_species_count);
+    saved_trophic_level.assign(m_trophic_level, m_trophic_level + m_species_count);
+    saved_species_count = m_species_count;
+
+    return true;
+}
+void Foodweb::restore_state()
+{
+    for (size_t i = 0; i < saved_species_count; i++)
+    {
+        m_fitness[i] = saved_fitness[i];
+        m_trophic_level[i] = saved_trophic_level[i];
+    }
+    m_species_count = saved_species_count;
+
+    calculated = true;
 }

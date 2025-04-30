@@ -23,16 +23,15 @@ public:
     /// @brief Access to the individual output files
     enum resfile_type {
         OUT_SETTINGS        // 0
-      , OUT_STEPS           // 1
+      , OUT_HABITAT_SPECIES // 1
       , OUT_LIVING_SPECIES  // 2
-      , OUT_TL              // 3
-      , OUT_TL_ALL          // 4
-      , OUT_GLOBAL_INFO     // 5
-      , OUT_ALIVE           // 6
-      , OUT_LIFETIME        // 7
-      , OUT_LTD_SLOPE       // 8
-      , OUT_ABORT           // 9
-      , OUT_FILE_COUNT      // 10
+      , OUT_TROPHIC_LEVELS  // 3
+      , OUT_GLOBAL_INFO     // 4
+      , OUT_ALIVE           // 5
+      , OUT_LIFETIME        // 6
+      , OUT_LTD_SLOPE       // 7
+      , OUT_ABORT           // 8
+      , OUT_FILE_COUNT      // 9
     };
 
     /// @brief Creates new output files
@@ -81,7 +80,7 @@ public:
     /// @param habitat current habitat
     /// @param universal_id species of the population
     /// @param fitness fitness of the population
-    void print_line_steps(resfile_type f, double time, size_t habitat, uint64_t universal_id, double fitness);
+    void print_line_habitat_species(resfile_type f, double time, size_t habitat, uint64_t universal_id, double fitness);
 
     /// @brief Prints all information about a species
     /// @param f OUT_SPECIES (FKA OUT_LIVING)
@@ -95,7 +94,16 @@ public:
     /// @param predator_strength predator strength of the species
     /// @param population_count number of habitats the species populates at the current time
     /// @param mean_trophic_level mean trophic level of all populations of the species in stable foodwebs
-    void print_line_species(resfile_type f, double time, uint64_t universal_id, double first_occurence, double bodymass, double feeding_center, double feeding_range, double dispersal_rate, double predator_strength, size_t population_count, double mean_trophic_level);
+    void print_line_living_species(resfile_type f, double time, uint64_t universal_id, double first_occurence, double bodymass, double feeding_center, double feeding_range, double dispersal_rate, double predator_strength, size_t population_count, double mean_trophic_level);
+
+    /// @brief Prints the mean and maximum trophic level of a habitat or of all populations of the metafoodweb
+    /// @param f OUT_TROPHIC_LEVELS
+    /// @param time current time of the simulation
+    /// @param habitat name of the habitat OR "P" for all populations of the metafoodweb
+    /// @param dimension number of populations in the habitat OR number of populations in the metafoodweb
+    /// @param mean_trophic_level mean trophic level of all populations in the habitat OR of all populations in the metafoodweb
+    /// @param max_trophic_level maximum trophic level of all populations in the habitat OR of all populations in the metafoodweb
+    void print_line_trophic_levels(resfile_type f, double time, std::string habitat, double dimension, double mean_trophic_level, double max_trophic_level);
 
 private:
 

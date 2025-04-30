@@ -69,11 +69,25 @@ public:
     /// @param index position of the population in the population array of the foodweb
     /// @return fitness of the population
     double get_fitness(size_t index) const;
+    
+    /// @brief Returns the trophic level of a population
+    /// @param index position of the population in the population array of the foodweb
+    /// @return trophic level of the population
+    double get_trophic_level(size_t index) const;
 
-    /// @brief Sets index to the index of the species with the lowest fitness, if below 1.0
-    /// @param index 
+    /// @brief Returns the mean trophic level of the populations in this foodweb (without the resource)
+    double get_mean_trophic_level() const;
+
+    /// @brief Returns the maximum trophic level of the populations in this foodweb
+    double get_max_trophic_level() const;
+
+    /// @brief Sets index to the index of the population with the lowest fitness, if below 1.0
+    /// @param[in,out] index 
     /// @return true, if fitness of at least one species is below 1.0, false otherwise
     bool determine_dying(size_t &index);
+
+    bool save_state();
+    void restore_state();
 
     /// @brief Sum of all species dispersal rates on this foodweb
     uint64_t m_local_dispersal_rate;
@@ -101,6 +115,11 @@ private:
     /// FKA dim
     size_t m_species_count;
     double *m_fitness;
+    double *m_trophic_level;
+
+    std::vector<double> saved_fitness;
+    std::vector<double> saved_trophic_level;
+    size_t saved_species_count;
     
     /// @brief true if the current status of the foodweb is calculated
     bool calculated;

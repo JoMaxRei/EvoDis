@@ -29,23 +29,21 @@ void Output::create_file_names(const std::string &path)
     static const std::array<std::string, OUT_FILE_COUNT> suffixes = {
         "settings" // 0
         ,
-        "steps" // 1
+        "habtitat_species" // 1
         ,
-        "living_species_at_steps" // 2
+        "living_species" // 2
         ,
-        "TL" // 3
+        "trophic_levels" // 3
         ,
-        "TL_all" // 4
+        "global_info" // 4
         ,
-        "global_info" // 5
+        "alive" // 5
         ,
-        "alive" // 6
+        "lifetime" // 6
         ,
-        "lifetime" // 7
+        "LTD_slope" // 7
         ,
-        "LTD_slope" // 8
-        ,
-        "abort" // 9
+        "abort" // 8
     };
 
     for (const auto &suffix : suffixes)
@@ -67,13 +65,16 @@ bool Output::create_new_files()
         }
         switch (i)
         {
-        case OUT_STEPS:
+        case OUT_HABITAT_SPECIES:
             file[i] << "time" << "\t" << "habitat" << "\t" << "universal_id" << "\t" << "fitness" << std::endl;
             break;
 
         case OUT_LIVING_SPECIES:
             file[i] << "time" << "\t" << "universal_id" << "\t" << "first_occurence" << "\t" << "bodymass" << "\t" << "feeding_center" << "\t" << "feeding_range" << "\t" << "dispersal_rate" << "\t" << "predator_strength" << "\t" << "population_count" << "\t" << "mean_trophic_level" << std::endl;
-            
+            break;
+
+        case OUT_TROPHIC_LEVELS:
+            file[i] << "time" << "\t" << "habitat" << "\t" << "dimension" << "\t" << "mean_trophic_level" << "\t" << "max_trophic_level" << std::endl;
             break;
 
         default:
@@ -275,7 +276,7 @@ void Output::print_settings(resfile_type f, BaseSettings base_settings, Simulati
         file[f].close();
 }
 
-void Output::print_line_steps(resfile_type f, double time, size_t habitat, uint64_t universal_id, double fitness)
+void Output::print_line_habitat_species(resfile_type f, double time, size_t habitat, uint64_t universal_id, double fitness)
 {
     if (muted(f))
         return;
@@ -291,18 +292,34 @@ void Output::print_line_steps(resfile_type f, double time, size_t habitat, uint6
         file[f].close();
 }
 
-void Output::print_line_species(resfile_type f, double time, uint64_t universal_id, double first_occurence, double bodymass, double feeding_center, double feeding_range, double dispersal_rate, double predator_strength, size_t population_count, double mean_trophic_level)
+void Output::print_line_living_species(resfile_type f, double time, uint64_t universal_id, double first_occurence, double bodymass, double feeding_center, double feeding_range, double dispersal_rate, double predator_strength, size_t population_count, double mean_trophic_level)
 {
     if (muted(f))
         return;
-    
+
     bool opend = file[f].is_open();
-    
-    if(!opend)
+
+    if (!opend)
         file[f].open(names[f].c_str(), std::ios::out | std::ios::app);
-    
+
     file[f] << time << "\t" << universal_id << "\t" << first_occurence << "\t" << bodymass << "\t" << feeding_center << "\t" << feeding_range << "\t" << dispersal_rate << "\t" << predator_strength << "\t" << population_count << "\t" << mean_trophic_level << std::endl;
-    
-    if(!opend)
+
+    if (!opend)
+        file[f].close();
+}
+
+void Output::print_line_trophic_levels(resfile_type f, double time, std::string habitat, double dimension, double mean_trophic_level, double max_trophic_level)
+{
+    if (muted(f))
+        return;
+
+    bool opend = file[f].is_open();
+
+    if (!opend)
+        file[f].open(names[f].c_str(), std::ios::out | std::ios::app);
+
+    file[f] << time << "\t" << habitat << "\t" << dimension << "\t" << mean_trophic_level << "\t" << max_trophic_level << std::endl;
+
+    if (!opend)
         file[f].close();
 }

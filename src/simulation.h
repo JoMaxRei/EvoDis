@@ -106,6 +106,13 @@ private:
     /// @brief Prints information about all currently living species
     void print_species();
 
+    /// @brief Prints information about all trophic levels of foodwebs and of living species
+    ///
+    /// habitat = -1 for mean trophic levels of all populations
+    ///
+    /// habitat = -2 for mean trophic levels of all species
+    void print_trophic_levels();
+
     gsl_rng *m_generator;
 
     /// @brief Simulation time
