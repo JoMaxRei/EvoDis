@@ -59,8 +59,6 @@ Simulation::Simulation(BaseSettings base_settings, SimulationSettings settings) 
         }
     }
 
-    
-
     m_number_of_living_populations = static_cast<size_t>(settings.number_of_habitats());
     m_number_of_living_species += 1;
 
@@ -410,13 +408,25 @@ Species *Simulation::speciate(Species *parent)
         return NULL;
     }
 
-    double new_feeding_range = m_settings.min_feeding_range + random_value() * (m_settings.max_feeding_range - m_settings.min_feeding_range);
+    // Option 1: Randomly choose a new feeding center and feeding range then check if feeding center plus feeding range is smaller than the bodymass and else try again
+    double new_feeding_range;
     double new_feeding_center;
 
     do
     {
+        new_feeding_range = m_settings.min_feeding_range + random_value() * (m_settings.max_feeding_range - m_settings.min_feeding_range);
         new_feeding_center = new_bodymass - m_settings.mean_bodymass_ratio_predator_prey + random_normal();
-    } while (new_feeding_center > new_bodymass - new_feeding_range);
+    } while (new_bodymass < new_feeding_center + new_feeding_range);
+        
+
+    // // Option 2: First randomly choose a new feeding range and then select a fitting feeding center
+    // double new_feeding_range = m_settings.min_feeding_range + random_value() * (m_settings.max_feeding_range - m_settings.min_feeding_range);
+    // double new_feeding_center;
+
+    // do
+    // {
+    //     new_feeding_center = new_bodymass - m_settings.mean_bodymass_ratio_predator_prey + random_normal();
+    // } while (new_feeding_center > new_bodymass - new_feeding_range);
 
     double new_dispersal_rate_min = log2(static_cast<double>(parent->m_dispersal_rate) / (1.0 + m_settings.dispersal_variance));
     double new_dispersal_rate_max = log2(static_cast<double>(parent->m_dispersal_rate) * (1.0 + m_settings.dispersal_variance));
@@ -446,6 +456,12 @@ void Simulation::die(size_t global_index)
     if (m_population_count[global_index] == 0)
     {
         // LOG(DEBUG) << "Last population of species " << global_index << " has died. Spiecies will be deleted";
+        double lifetime = m_t - m_species[global_index]->m_first_occurence;
+        if (m_species[global_index]->get_trophic_level() > 0.0 || lifetime > 0.0)
+        {
+            m_output->update_bins(lifetime, m_species[global_index]->get_trophic_level());
+        }
+
         m_free_indices.push_back(global_index);
         m_species[global_index] = NULL;
         m_number_of_living_species -= 1;
@@ -479,6 +495,14 @@ void Simulation::print()
     print_species();
 
     print_trophic_levels();
+
+    print_global_dispersal_info();
+
+    print_alive_foodwebs();
+
+    print_lifetime_distribution();
+
+    print_lifetime_distribution_slope();
 
     LOG(INFO) << m_t << " - end printing";
 }
@@ -553,7 +577,7 @@ void Simulation::print_trophic_levels()
 {
     if (!m_output->muted(Output::OUT_TROPHIC_LEVELS))
     {
-        LOG(INFO) << "print_trophic_levels";
+        LOG(INFO) << "print trophic levels";
 
         double mean_trophic_level_populations = 0.0;
         double max_trophic_level_populations = 0.0;
@@ -595,5 +619,167 @@ void Simulation::print_trophic_levels()
         }
 
         m_output->close_file(Output::OUT_TROPHIC_LEVELS);
+    }
+}
+
+void Simulation::print_global_dispersal_info()
+{
+    if (!m_output->muted(Output::OUT_GLOBAL_INFO))
+    {
+        LOG(INFO) << "print global info";
+
+        // double time;
+        // size_t number_of_species;
+        // size_t number_of_populations;
+        size_t min_distribution = m_settings.number_of_habitats();
+        double mean_distribution;
+        size_t mean_distribution_uint = 0;
+        size_t max_distribution = 0;
+        double min_dispersal_rate;
+        uint64_t min_dispersal_rate_uint = m_total_dispersal_rate;
+        double mean_dispersal_rate_species;
+        uint64_t mean_dispersal_rate_species_uint = 0;
+        double mean_dispersal_rate_populations = static_cast<double>(m_total_dispersal_rate) / static_cast<double>(m_settings.speciation_rate_per_population) / static_cast<double>(m_number_of_living_populations);
+        double max_dispersal_rate;
+        uint64_t max_dispersal_rate_uint = 0;
+        double min_predator_strength = 1.0;
+        double mean_predator_strength_species = 0.0;
+        double mean_predator_strength_populations = 0.0;
+        double max_predator_strength = 0.0;
+
+        for (size_t i = 0; i < m_settings.grid_length; i++)
+        {
+            for (size_t j = 0; j < m_settings.grid_length; j++)
+            {
+                for (size_t k = 1; k < m_foodwebs[i][j]->get_dimension(); k++)
+                {
+                    mean_predator_strength_populations += m_foodwebs[i][j]->get_species(k)->m_predator_strength;
+                }
+            }
+        }
+
+        mean_predator_strength_populations /= static_cast<double>(m_number_of_living_populations);
+
+        for (size_t i = 1; i < m_settings.maximum_species_number(); i++)
+        {
+            if (m_species[i] != NULL)
+            {
+                mean_distribution_uint += m_population_count[i];
+
+                if (min_distribution > m_population_count[i])
+                {
+                    min_distribution = m_population_count[i];
+                }
+                if (max_distribution < m_population_count[i])
+                {
+                    max_distribution = m_population_count[i];
+
+                    mean_dispersal_rate_species_uint += m_species[i]->m_dispersal_rate;
+                }
+                if (min_dispersal_rate_uint > m_species[i]->m_dispersal_rate)
+                {
+                    min_dispersal_rate_uint = m_species[i]->m_dispersal_rate;
+                }
+                if (max_dispersal_rate_uint < m_species[i]->m_dispersal_rate)
+                {
+                    max_dispersal_rate_uint = m_species[i]->m_dispersal_rate;
+                }
+
+                mean_predator_strength_species += m_species[i]->m_predator_strength;
+
+                if (min_predator_strength > m_species[i]->m_predator_strength)
+                {
+                    min_predator_strength = m_species[i]->m_predator_strength;
+                }
+                if (max_predator_strength < m_species[i]->m_predator_strength)
+                {
+                    max_predator_strength = m_species[i]->m_predator_strength;
+                }
+            }
+        }
+
+        mean_distribution = static_cast<double>(mean_distribution_uint) / static_cast<double>(m_number_of_living_species);
+
+        mean_dispersal_rate_species = static_cast<double>(mean_dispersal_rate_species_uint) / static_cast<double>(m_settings.speciation_rate_per_population) / static_cast<double>(m_number_of_living_species);
+
+        min_dispersal_rate = static_cast<double>(min_dispersal_rate_uint) / static_cast<double>(m_settings.speciation_rate_per_population);
+        max_dispersal_rate = static_cast<double>(max_dispersal_rate_uint) / static_cast<double>(m_settings.speciation_rate_per_population);
+
+        mean_predator_strength_species /= static_cast<double>(m_number_of_living_species);
+
+        m_output->open_file(Output::OUT_GLOBAL_INFO);
+        m_output->print_line_global_dispersal_info(Output::OUT_GLOBAL_INFO,
+                                                   m_t,
+                                                   m_number_of_living_species,
+                                                   m_number_of_living_populations,
+                                                   min_distribution,
+                                                   mean_distribution,
+                                                   max_distribution,
+                                                   min_dispersal_rate,
+                                                   mean_dispersal_rate_species,
+                                                   mean_dispersal_rate_populations,
+                                                   max_dispersal_rate,
+                                                   min_predator_strength,
+                                                   mean_predator_strength_species,
+                                                   mean_predator_strength_populations,
+                                                   max_predator_strength);
+        m_output->close_file(Output::OUT_GLOBAL_INFO);
+    }
+}
+
+void Simulation::print_alive_foodwebs()
+{
+    if (!m_output->muted(Output::OUT_ALIVE_FOODWEBS))
+    {
+        LOG(INFO) << "print alive foodwebs";
+
+        size_t alive = 0;
+        for (size_t i = 0; i < m_settings.grid_length; i++)
+        {
+            for (size_t j = 0; j < m_settings.grid_length; j++)
+            {
+                if (m_foodwebs[i][j]->get_dimension() > 1)
+                {
+                    alive += 1;
+                }
+            }
+        }
+        
+        m_output->open_file(Output::OUT_ALIVE_FOODWEBS);
+        m_output->print_line_alive_foodwebs(Output::OUT_ALIVE_FOODWEBS,
+                                            m_t,
+                                            alive,
+                                            static_cast<double>(alive) / static_cast<double>(m_settings.number_of_habitats()));
+        m_output->close_file(Output::OUT_ALIVE_FOODWEBS);
+    }
+}
+
+void Simulation::print_lifetime_distribution()
+{
+    if (!m_output->muted(Output::OUT_LIFETIME_DISTRIBUTION))
+    {
+        LOG(INFO) << "print lifetime distribution";
+
+        m_output->open_file(Output::OUT_LIFETIME_DISTRIBUTION);
+
+        m_output->print_lifetime_distribution(Output::OUT_LIFETIME_DISTRIBUTION, m_t);
+
+        m_output->close_file(Output::OUT_LIFETIME_DISTRIBUTION);
+        
+    }
+}
+
+void Simulation::print_lifetime_distribution_slope()
+{
+    if (!m_output->muted(Output::OUT_LTD_SLOPE))
+    {
+        LOG(INFO) << "print lifetime distribution slope";
+
+        m_output->open_file(Output::OUT_LTD_SLOPE);
+
+        m_output->print_LTD_slope(Output::OUT_LTD_SLOPE, m_t);
+
+        m_output->close_file(Output::OUT_LTD_SLOPE);
+        
     }
 }

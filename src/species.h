@@ -23,6 +23,7 @@ public:
     double m_feeding_range;
     /// @brief AKA u
     double m_predator_strength;
+    /// @brief first time this species was present in the simulation
     double m_first_occurence;
     uint64_t m_dispersal_rate;
     /// @brief unique id of this species

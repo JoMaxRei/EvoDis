@@ -106,12 +106,24 @@ private:
     /// @brief Prints information about all currently living species
     void print_species();
 
+    /// @brief Prints information about dispersion and dispersal of all populations and species
+    void print_global_dispersal_info();
+
+    /// @brief Prints the number and the fraction of foodwebs with more species than the resource
+    void print_alive_foodwebs();
+
     /// @brief Prints information about all trophic levels of foodwebs and of living species
     ///
     /// habitat = -1 for mean trophic levels of all populations
     ///
     /// habitat = -2 for mean trophic levels of all species
     void print_trophic_levels();
+
+    /// @brief Prints the distribution of lifetimes of all species and for each trophic level class
+    void print_lifetime_distribution();
+
+    /// @brief Prints the slope of the lifetime distribution for all species and for each trophic level class
+    void print_lifetime_distribution_slope();
 
     gsl_rng *m_generator;
 
