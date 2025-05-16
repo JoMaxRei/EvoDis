@@ -30,7 +30,7 @@ public:
 
 private:
     /// @brief FKA basic init
-    Simulation(SimulationSettings settings, std::string output_path, double speciations_per_patch);
+    Simulation(SimulationSettings settings, std::string output_path, double speciations_per_patch, std::vector<std::string> muted_outputs);
     
     void create_folder(std::string path);
 

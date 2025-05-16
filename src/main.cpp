@@ -18,11 +18,12 @@ int main(int argc, char **argv)
     CLI::App *load_from_file = app.add_subcommand("load", "loads a simulation from file");
     app.require_subcommand(1);
 
-    BaseSettings base_settings;
+    BaseSettings base_settings = BaseSettings::DEFAULT();
     // define general parameters
     app.add_option("-o,--output", base_settings.output_path, "output path of the simulation")->required();
     app.add_option("-t,--spp", base_settings.speciations_per_patch, "how many events should be simulated on average on each patch before simulation stops")->required();
     app.add_option("-S,--saves", base_settings.number_of_saves, "how many saves during whole simulation")->required();
+    app.add_option("-m,--mute", base_settings.muted_outputs, "Outputs to mute (comma-separated): settings,habitat,living,tl,global,alive,ltd,slope,abort")->delimiter(',');
 
     // define parameters for new sim
     SimulationSettings settings = SimulationSettings::DEFAULT();

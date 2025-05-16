@@ -13,10 +13,10 @@ Simulation::Simulation() : m_result(-1), m_settings(SimulationSettings::DEFAULT(
 {
 }
 
-Simulation::Simulation(BaseSettings base_settings, SimulationSettings settings) : Simulation(settings, base_settings.output_path, base_settings.speciations_per_patch)
+Simulation::Simulation(BaseSettings base_settings, SimulationSettings settings) : Simulation(settings, base_settings.output_path, base_settings.speciations_per_patch, base_settings.muted_outputs)
 {
     m_t = 0.0;
-    LOG(INFO) << "Start of a new simulation";
+    LOG(INFO) << "New simulation";
 
     create_folder(base_settings.output_path);
     create_folder(base_settings.output_path + "/saves");
@@ -70,17 +70,17 @@ Simulation::Simulation(BaseSettings base_settings, SimulationSettings settings) 
     // LOG(DEBUG) << m_t << " - END";
 }
 
-// AKA load
 Simulation::Simulation(BaseSettings base_settings, std::string path) : Simulation()
 {
 }
 
-// AKA basic_init
-Simulation::Simulation(SimulationSettings settings, std::string output_path, double speciations_per_patch) : m_result(0),
-                                                                                                             m_speciation_rate_per_population(settings.speciation_rate_per_population),
-                                                                                                             m_speciations_per_patch(speciations_per_patch),
-                                                                                                             m_settings(settings)
+Simulation::Simulation(SimulationSettings settings, std::string output_path, double speciations_per_patch, std::vector<std::string> muted_outputs) : m_result(0),
+                                                                                                                                                     m_speciation_rate_per_population(settings.speciation_rate_per_population),
+                                                                                                                                                     m_speciations_per_patch(speciations_per_patch),
+                                                                                                                                                     m_settings(settings)
 {
+    LOG(INFO) << "Start of simulation";
+
     for (size_t index = settings.maximum_species_number() - 1; index > 0; index--)
     {
         m_free_indices.push_back(index);
@@ -123,6 +123,57 @@ Simulation::Simulation(SimulationSettings settings, std::string output_path, dou
     m_generator = gsl_rng_alloc(T);
 
     m_output = new Output(output_path, settings.number_of_habitats(), settings.initial_dispersal_rate, settings.zero_crossing);
+
+    for (const auto &name : muted_outputs)
+    {
+        if (name == "settings")
+        {
+            m_output->mute(Output::OUT_SETTINGS);
+            LOG(INFO) << "Output \"settings\" is muted";
+        }
+        else if (name == "habitat")
+        {
+            m_output->mute(Output::OUT_HABITAT_SPECIES);
+            LOG(INFO) << "Output \"habtitat_species\" is muted";
+        }
+        else if (name == "living")
+        {
+            m_output->mute(Output::OUT_LIVING_SPECIES);
+            LOG(INFO) << "Output \"living_species\" is muted";
+        }
+        else if (name == "tl")
+        {
+            m_output->mute(Output::OUT_TROPHIC_LEVELS);
+            LOG(INFO) << "Output \"trophic_levels\" is muted";
+        }
+        else if (name == "global")
+        {
+            m_output->mute(Output::OUT_GLOBAL_INFO);
+            LOG(INFO) << "Output \"global_info\" is muted";
+        }
+        else if (name == "alive")
+        {
+            m_output->mute(Output::OUT_ALIVE_FOODWEBS);
+            LOG(INFO) << "Output \"alive_foodwebs\" is muted";
+        }
+        else if (name == "ltd")
+        {
+            m_output->mute(Output::OUT_LIFETIME_DISTRIBUTION);
+            LOG(INFO) << "Output \"lifetime_distribution\" is muted";
+        }
+        else if (name == "slope")
+        {
+            m_output->mute(Output::OUT_LTD_SLOPE);
+            LOG(INFO) << "Output \"LTD_slope\" is muted";
+        }
+        else if (name == "abort")
+        {
+            m_output->mute(Output::OUT_ABORT);
+            LOG(INFO) << "Output \"abort\" is muted";
+        }
+        else
+            LOG(WARNING) << "Unknown output to mute: " << name;
+    }
 }
 
 void Simulation::create_folder(std::string path)
@@ -417,7 +468,6 @@ Species *Simulation::speciate(Species *parent)
         new_feeding_range = m_settings.min_feeding_range + random_value() * (m_settings.max_feeding_range - m_settings.min_feeding_range);
         new_feeding_center = new_bodymass - m_settings.mean_bodymass_ratio_predator_prey + random_normal();
     } while (new_bodymass < new_feeding_center + new_feeding_range);
-        
 
     // // Option 2: First randomly choose a new feeding range and then select a fitting feeding center
     // double new_feeding_range = m_settings.min_feeding_range + random_value() * (m_settings.max_feeding_range - m_settings.min_feeding_range);
@@ -744,7 +794,7 @@ void Simulation::print_alive_foodwebs()
                 }
             }
         }
-        
+
         m_output->open_file(Output::OUT_ALIVE_FOODWEBS);
         m_output->print_line_alive_foodwebs(Output::OUT_ALIVE_FOODWEBS,
                                             m_t,
@@ -765,7 +815,6 @@ void Simulation::print_lifetime_distribution()
         m_output->print_lifetime_distribution(Output::OUT_LIFETIME_DISTRIBUTION, m_t);
 
         m_output->close_file(Output::OUT_LIFETIME_DISTRIBUTION);
-        
     }
 }
 
@@ -780,6 +829,5 @@ void Simulation::print_lifetime_distribution_slope()
         m_output->print_LTD_slope(Output::OUT_LTD_SLOPE, m_t);
 
         m_output->close_file(Output::OUT_LTD_SLOPE);
-        
     }
 }
