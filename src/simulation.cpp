@@ -79,7 +79,7 @@ Simulation::Simulation(SimulationSettings settings, std::string output_path, dou
                                                                                                                                                      m_speciations_per_patch(speciations_per_patch),
                                                                                                                                                      m_settings(settings)
 {
-    LOG(INFO) << "Start of simulation";
+    LOG(INFO) << "Preparing simulation";
 
     for (size_t index = settings.maximum_species_number() - 1; index > 0; index--)
     {
@@ -176,6 +176,55 @@ Simulation::Simulation(SimulationSettings settings, std::string output_path, dou
     }
 }
 
+Simulation::TimeComponents Simulation::split_time(int64_t seconds_to_split)
+{
+    TimeComponents time;
+    time.hours = static_cast<size_t>(seconds_to_split / 3600);
+    time.minutes = static_cast<size_t>((seconds_to_split % 3600) / 60);
+    time.seconds = static_cast<size_t>(seconds_to_split % 60);
+    return time;
+}
+
+void Simulation::print_time(LogType type)
+{
+    auto now = std::chrono::steady_clock::now();
+
+    m_last_log_time[type] = now;
+    m_last_progress[type] = m_progress[type];
+    m_progress[type] = m_t / m_speciations_per_patch;
+    m_last_elapsed_seconds[type] = m_elapsed_seconds[type];
+    m_elapsed_seconds[type] = std::chrono::duration_cast<std::chrono::seconds>(now - m_start_time).count();
+
+    double current_speed = (m_progress[type] - m_last_progress[type]) / static_cast<double>(m_elapsed_seconds[type] - m_last_elapsed_seconds[type]);
+
+    int64_t estimated_seconds_left = static_cast<int64_t>((1 - m_progress[type]) / current_speed);
+
+    auto time = Simulation::split_time(m_elapsed_seconds[type]);
+    auto time_left = Simulation::split_time(estimated_seconds_left);
+    auto time_total = Simulation::split_time(estimated_seconds_left + m_elapsed_seconds[type]);
+
+    LOG(INFO)  << logTypeToString(type) << " - [Progress]             - "
+                << m_t << " / " << m_speciations_per_patch
+                << " (" << 100 * m_progress[type] << "%)";
+    LOG(INFO)  << logTypeToString(type) << " - [Elapsed time]         - "
+                << time.hours << "h " << time.minutes << "m " << time.seconds << "s";
+    LOG(INFO)  << logTypeToString(type) << " - [Estimated time left]  - "
+                << time_left.hours << "h " << time_left.minutes << "m " << time_left.seconds << "s";
+    LOG(INFO)  << logTypeToString(type) << " - [Total estimated time] - "
+                << time_total.hours << "h " << time_total.minutes << "m " << time_total.seconds << "s";
+}
+
+inline const char* Simulation::logTypeToString(LogType type)
+{
+    switch (type)
+    {
+    case INTERVAL: return "[INTERVAL]";
+    case SAVE:     return "[SAVE]    ";
+    default:       return "UNKNOWN";
+    }
+}
+
+
 void Simulation::create_folder(std::string path)
 {
     const int dir_err = mkdir(path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
@@ -187,7 +236,22 @@ void Simulation::create_folder(std::string path)
 
 void Simulation::run()
 {
+
     double time_of_next_save = m_save_interval;
+
+    m_start_time = std::chrono::steady_clock::now();
+    
+    std::fill(std::begin(m_last_log_time), std::end(m_last_log_time), m_start_time);
+
+    std::fill(std::begin(m_elapsed_seconds), std::end(m_elapsed_seconds), 0);
+    std::fill(std::begin(m_last_elapsed_seconds), std::end(m_last_elapsed_seconds), 0);
+    
+    std::fill(std::begin(m_progress), std::end(m_progress), 0.0);
+    std::fill(std::begin(m_last_progress), std::end(m_last_progress), 0.0);
+
+    auto log_interval = std::chrono::seconds(10);
+
+    LOG(INFO) << "Start of simulation";
 
     while (m_result == 0 && m_t < m_speciations_per_patch)
     {
@@ -197,8 +261,22 @@ void Simulation::run()
             double total_speciation_rate = static_cast<double>(m_speciation_rate_per_population) * static_cast<double>(m_number_of_living_populations);
             m_t += 1.0 / (1.0 + static_cast<double>(m_total_dispersal_rate) / total_speciation_rate) / static_cast<double>(m_settings.number_of_habitats());
 
+            auto now = std::chrono::steady_clock::now();
+            if (now - m_last_log_time[INTERVAL] >= log_interval)
+            {
+
+                print_time(INTERVAL);
+
+                if (m_elapsed_seconds[INTERVAL] >= 120 && m_elapsed_seconds[INTERVAL] < 1800)
+                    log_interval = std::chrono::seconds(60);
+
+                if (m_elapsed_seconds[INTERVAL] >= 3600)
+                    log_interval = std::chrono::seconds(1800);
+            }
+
             if (m_t > time_of_next_save)
             {
+                print_time(SAVE);
                 print();
                 time_of_next_save += m_save_interval;
 
@@ -546,7 +624,7 @@ void Simulation::print()
 
     print_trophic_levels();
 
-    print_global_dispersal_info();
+    print_global_info();
 
     print_alive_foodwebs();
 
@@ -561,7 +639,7 @@ void Simulation::print_steps()
 {
     if (!m_output->muted(Output::OUT_HABITAT_SPECIES))
     {
-        LOG(INFO) << "print habitat species";
+        // LOG(INFO) << "print habitat species";
 
         // Calculate all foodwebs. Only needed if foodweb_cache is fully implemented. Otherwise each foodweb is already calculated
         // calculate();
@@ -590,7 +668,7 @@ void Simulation::print_species()
 {
     if (!m_output->muted(Output::OUT_LIVING_SPECIES))
     {
-        LOG(INFO) << "print living species";
+        // LOG(INFO) << "print living species";
 
         size_t test_number_of_species = 0;
 
@@ -627,7 +705,7 @@ void Simulation::print_trophic_levels()
 {
     if (!m_output->muted(Output::OUT_TROPHIC_LEVELS))
     {
-        LOG(INFO) << "print trophic levels";
+        // LOG(INFO) << "print trophic levels";
 
         double mean_trophic_level_populations = 0.0;
         double max_trophic_level_populations = 0.0;
@@ -672,15 +750,19 @@ void Simulation::print_trophic_levels()
     }
 }
 
-void Simulation::print_global_dispersal_info()
+void Simulation::print_global_info()
 {
     if (!m_output->muted(Output::OUT_GLOBAL_INFO))
     {
-        LOG(INFO) << "print global info";
+        // LOG(INFO) << "print global info";
 
         // double time;
         // size_t number_of_species;
         // size_t number_of_populations;
+        size_t min_foodweb_size = Foodweb::MAX_DIM;
+        double mean_foodweb_size;
+        size_t mean_foodweb_size_uint = 0;
+        size_t max_foodweb_size = 0;
         size_t min_distribution = m_settings.number_of_habitats();
         double mean_distribution;
         size_t mean_distribution_uint = 0;
@@ -701,12 +783,25 @@ void Simulation::print_global_dispersal_info()
         {
             for (size_t j = 0; j < m_settings.grid_length; j++)
             {
+                if (m_foodwebs[i][j]->get_dimension() < min_foodweb_size)
+                {
+                    min_foodweb_size = m_foodwebs[i][j]->get_dimension();
+                }
+                if (m_foodwebs[i][j]->get_dimension() > max_foodweb_size)
+                {
+                    max_foodweb_size = m_foodwebs[i][j]->get_dimension();
+                }
+
+                mean_foodweb_size_uint += m_foodwebs[i][j]->get_dimension();
+
                 for (size_t k = 1; k < m_foodwebs[i][j]->get_dimension(); k++)
                 {
                     mean_predator_strength_populations += m_foodwebs[i][j]->get_species(k)->m_predator_strength;
                 }
             }
         }
+
+        mean_foodweb_size = static_cast<double>(mean_foodweb_size_uint) / static_cast<double>(m_settings.number_of_habitats());
 
         mean_predator_strength_populations /= static_cast<double>(m_number_of_living_populations);
 
@@ -758,10 +853,13 @@ void Simulation::print_global_dispersal_info()
         mean_predator_strength_species /= static_cast<double>(m_number_of_living_species);
 
         m_output->open_file(Output::OUT_GLOBAL_INFO);
-        m_output->print_line_global_dispersal_info(Output::OUT_GLOBAL_INFO,
+        m_output->print_line_global_info(Output::OUT_GLOBAL_INFO,
                                                    m_t,
                                                    m_number_of_living_species,
                                                    m_number_of_living_populations,
+                                                   min_foodweb_size,
+                                                   mean_foodweb_size,
+                                                   max_foodweb_size,
                                                    min_distribution,
                                                    mean_distribution,
                                                    max_distribution,
@@ -781,7 +879,7 @@ void Simulation::print_alive_foodwebs()
 {
     if (!m_output->muted(Output::OUT_ALIVE_FOODWEBS))
     {
-        LOG(INFO) << "print alive foodwebs";
+        // LOG(INFO) << "print alive foodwebs";
 
         size_t alive = 0;
         for (size_t i = 0; i < m_settings.grid_length; i++)
@@ -808,7 +906,7 @@ void Simulation::print_lifetime_distribution()
 {
     if (!m_output->muted(Output::OUT_LIFETIME_DISTRIBUTION))
     {
-        LOG(INFO) << "print lifetime distribution";
+        // LOG(INFO) << "print lifetime distribution";
 
         m_output->open_file(Output::OUT_LIFETIME_DISTRIBUTION);
 
@@ -822,7 +920,7 @@ void Simulation::print_lifetime_distribution_slope()
 {
     if (!m_output->muted(Output::OUT_LTD_SLOPE))
     {
-        LOG(INFO) << "print lifetime distribution slope";
+        // LOG(INFO) << "print lifetime distribution slope";
 
         m_output->open_file(Output::OUT_LTD_SLOPE);
 

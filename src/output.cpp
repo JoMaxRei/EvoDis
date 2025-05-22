@@ -67,33 +67,71 @@ bool Output::create_new_files()
         switch (i)
         {
         case OUT_HABITAT_SPECIES:
-            file[i] << "time" << "\t" << "habitat" << "\t" << "universal_id" << "\t" << "fitness" << std::endl;
+            file[i] << "time" << "\t"
+                    << "habitat" << "\t"
+                    << "universal_id" << "\t"
+                    << "fitness" << std::endl;
             break;
 
         case OUT_LIVING_SPECIES:
-            file[i] << "time" << "\t" << "universal_id" << "\t" << "first_occurence" << "\t" << "bodymass" << "\t" << "feeding_center" << "\t" << "feeding_range" << "\t" << "dispersal_rate" << "\t" << "predator_strength" << "\t" << "population_count" << "\t" << "mean_trophic_level" << std::endl;
+            file[i] << "time" << "\t"
+                    << "universal_id" << "\t"
+                    << "first_occurence" << "\t"
+                    << "bodymass" << "\t"
+                    << "feeding_center" << "\t"
+                    << "feeding_range" << "\t"
+                    << "dispersal_rate" << "\t"
+                    << "predator_strength" << "\t"
+                    << "population_count" << "\t"
+                    << "mean_trophic_level" << std::endl;
             break;
 
         case OUT_TROPHIC_LEVELS:
-            file[i] << "time" << "\t" << "habitat" << "\t" << "dimension" << "\t" << "mean_trophic_level" << "\t" << "max_trophic_level" << std::endl;
+            file[i] << "time" << "\t"
+                    << "habitat" << "\t"
+                    << "dimension" << "\t"
+                    << "mean_trophic_level" << "\t"
+                    << "max_trophic_level" << std::endl;
             break;
 
         case OUT_GLOBAL_INFO:
-            file[i] << "time" << "\t" << "number_of_species" << "\t" << "number_of_populations" << "\t" << "min_distribution" << "\t" << "mean_distribution" << "\t" << "max_distribution" << "\t" << "min_dispersal_rate" << "\t" << "mean_dispersal_rate_species" << "\t" << "mean_dispersal_rate_populations" << "\t" << "max_dispersal_rate" << "\t" << "min_predator_strength" << "\t" << "mean_predator_strength_species" << "\t" << "mean_predator_strength_populations" << "\t" << "max_predator_strength" << std::endl;
+            file[i] << "time" << "\t"
+                    << "number_of_species" << "\t"
+                    << "number_of_populations" << "\t"
+                    << "min_foodweb_size" << "\t"
+                    << "mean_foodweb_size" << "\t"
+                    << "max_foodweb_size" << "\t"
+                    << "min_distribution" << "\t"
+                    << "mean_distribution" << "\t"
+                    << "max_distribution" << "\t"
+                    << "min_dispersal_rate" << "\t"
+                    << "mean_dispersal_rate_species" << "\t"
+                    << "mean_dispersal_rate_populations" << "\t"
+                    << "max_dispersal_rate" << "\t"
+                    << "min_predator_strength" << "\t"
+                    << "mean_predator_strength_species" << "\t"
+                    << "mean_predator_strength_populations" << "\t"
+                    << "max_predator_strength" << std::endl;
             break;
 
         case OUT_ALIVE_FOODWEBS:
-            file[i] << "time" << "\t" << "number_of_alive_foodwebs" << "\t" << "fraction_of_alive_foodwebs" << std::endl;
+            file[i] << "time" << "\t"
+                    << "number_of_alive_foodwebs" << "\t"
+                    << "fraction_of_alive_foodwebs" << std::endl;
             break;
 
         case OUT_LIFETIME_DISTRIBUTION:
-            file[i] << "time" << "\t" << "interval" << "\t" << "tl_class" << std::endl;
-            file[i] << "bin content" << std::endl;
+            file[i] << "time" << "\t"
+                    << "interval" << "\t"
+                    << "tl_class" << std::endl;
+            file[i] << "bin content: smallest exponent is " << smallest_lifetime_exponent << " and number of bins between 10^x and 10^(x+1) is " << inverted_binsize << "" << std::endl;
             file[i] << std::endl;
             break;
 
         case OUT_LTD_SLOPE:
-            file[i] << "time" << "\t" << "TL Interval" << "\t" << "LTD slope" << std::endl;
+            file[i] << "time" << "\t"
+                    << "TL Interval" << "\t"
+                    << "LTD slope" << std::endl;
             break;
 
         default:
@@ -194,7 +232,6 @@ void Output::update_bins(double lifetime, double trophic_level)
     size_t curr_lifetime_bin = get_curr_lifetime_bin(lifetime);
 
     update_bin(0, curr_lifetime_bin);
-
 
     if (tl_class < 1) // Ressource
         return;
@@ -409,7 +446,7 @@ void Output::print_settings(resfile_type f,
     file[f] << "Minimum feeding range:     " << settings.min_feeding_range << std::endl;
     file[f] << "Maximum feeding range:     " << settings.max_feeding_range << std::endl;
     file[f] << std::endl;
-    file[f] << "Base gain (E0): " << settings.base_gain << std::endl;
+    file[f] << "Base gain (E0):            " << settings.base_gain << std::endl;
     file[f] << "Competition parameter (ξ): " << settings.competition_parameter << std::endl;
     file[f] << "Predation parameter (p):   " << settings.predation_parameter << std::endl;
     file[f] << "Trophic loss (x):          " << settings.trophic_loss << std::endl;
@@ -461,7 +498,17 @@ void Output::print_line_living_species(resfile_type f,
     if (!opend)
         file[f].open(names[f].c_str(), std::ios::out | std::ios::app);
 
-    file[f] << time << "\t" << universal_id << "\t" << first_occurence << "\t" << bodymass << "\t" << feeding_center << "\t" << feeding_range << "\t" << dispersal_rate << "\t" << predator_strength << "\t" << population_count << "\t" << mean_trophic_level << std::endl;
+    file[f] << time << "\t"
+            << universal_id << "\t"
+            << first_occurence << "\t"
+            << bodymass << "\t"
+            << feeding_center << "\t"
+            << feeding_range << "\t"
+            << dispersal_rate << "\t"
+            << predator_strength << "\t"
+            << population_count << "\t"
+            << mean_trophic_level
+            << std::endl;
 
     if (!opend)
         file[f].close();
@@ -482,27 +529,35 @@ void Output::print_line_trophic_levels(resfile_type f,
     if (!opend)
         file[f].open(names[f].c_str(), std::ios::out | std::ios::app);
 
-    file[f] << time << "\t" << habitat << "\t" << dimension << "\t" << mean_trophic_level << "\t" << max_trophic_level << std::endl;
+    file[f] << time << "\t"
+            << habitat << "\t"
+            << dimension << "\t"
+            << mean_trophic_level << "\t"
+            << max_trophic_level
+            << std::endl;
 
     if (!opend)
         file[f].close();
 }
 
-void Output::print_line_global_dispersal_info(resfile_type f,
-                                              double time,
-                                              size_t number_of_species,
-                                              size_t number_of_populations,
-                                              size_t min_distribution,
-                                              double mean_distribution,
-                                              size_t max_distribution,
-                                              double min_dispersal_rate,
-                                              double mean_dispersal_rate_species,
-                                              double mean_dispersal_rate_populations,
-                                              double max_dispersal_rate,
-                                              double min_predator_strength,
-                                              double mean_predator_strength_species,
-                                              double mean_predator_strength_populations,
-                                              double max_predator_strength)
+void Output::print_line_global_info(resfile_type f,
+                                    double time,
+                                    size_t number_of_species,
+                                    size_t number_of_populations,
+                                    size_t min_foodweb_size,
+                                    double mean_foodweb_size,
+                                    size_t max_foodweb_size,
+                                    size_t min_distribution,
+                                    double mean_distribution,
+                                    size_t max_distribution,
+                                    double min_dispersal_rate,
+                                    double mean_dispersal_rate_species,
+                                    double mean_dispersal_rate_populations,
+                                    double max_dispersal_rate,
+                                    double min_predator_strength,
+                                    double mean_predator_strength_species,
+                                    double mean_predator_strength_populations,
+                                    double max_predator_strength)
 {
     if (muted(f))
         return;
@@ -512,7 +567,24 @@ void Output::print_line_global_dispersal_info(resfile_type f,
     if (!opend)
         file[f].open(names[f].c_str(), std::ios::out | std::ios::app);
 
-    file[f] << time << "\t" << number_of_species << "\t" << number_of_populations << "\t" << min_distribution << "\t" << mean_distribution << "\t" << max_distribution << "\t" << min_dispersal_rate << "\t" << mean_dispersal_rate_species << "\t" << mean_dispersal_rate_populations << "\t" << max_dispersal_rate << "\t" << min_predator_strength << "\t" << mean_predator_strength_species << "\t" << mean_predator_strength_populations << "\t" << max_predator_strength << std::endl;
+    file[f] << time << "\t"
+            << number_of_species << "\t"
+            << number_of_populations << "\t"
+            << min_foodweb_size << "\t"
+            << mean_foodweb_size << "\t"
+            << max_foodweb_size << "\t"
+            << min_distribution << "\t"
+            << mean_distribution << "\t"
+            << max_distribution << "\t"
+            << min_dispersal_rate << "\t"
+            << mean_dispersal_rate_species << "\t"
+            << mean_dispersal_rate_populations << "\t"
+            << max_dispersal_rate << "\t"
+            << min_predator_strength << "\t"
+            << mean_predator_strength_species << "\t"
+            << mean_predator_strength_populations << "\t"
+            << max_predator_strength
+            << std::endl;
 
     if (!opend)
         file[f].close();

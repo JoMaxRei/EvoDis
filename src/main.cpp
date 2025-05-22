@@ -28,7 +28,12 @@ int main(int argc, char **argv)
     // define parameters for new sim
     SimulationSettings settings = SimulationSettings::DEFAULT();
     create_new->add_option("-s,--seed", settings.seed, "seed of the simulation")->required();
-    create_new->add_option("-g,--gridL", settings.grid_length, "grid length of the simulation; Default: 5");
+    create_new->add_option("-g,--gridl", settings.grid_length, "grid length of the simulation; Default: 5");
+
+    create_new->add_option("-d,--drange", settings.dispersal_range, "dispersal range of a species; Default: 1");
+
+    create_new->add_option("-i,--inidr", settings.initial_dispersal_rate, "initial dispersal rate; Default: 10.0");
+    create_new->add_option("-z,--zeroc", settings.zero_crossing, "dispersal rate at which the predation strength is zero; Default: 1e5");
 
     // define parameters for old sim
     std::string input_path;

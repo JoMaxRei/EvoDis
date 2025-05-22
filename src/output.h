@@ -142,6 +142,9 @@ public:
     /// @param time current time of the simulation
     /// @param number_of_species number of species at the current time
     /// @param number_of_populations number of populations at the current time
+    /// @param min_foodweb_size minimum number of populations over all foodwebs
+    /// @param mean_foodweb_size mean number of populations over all foodwebs
+    /// @param max_foodweb_size maximum number of populations over all foodwebs
     /// @param min_distribution minimum number of populations of a species
     /// @param mean_distribution mean number of populations of a species
     /// @param max_distribution maximum number of populations of a species
@@ -153,10 +156,13 @@ public:
     /// @param mean_predator_strength_species mean predator strength of a species
     /// @param mean_predator_strength_populations mean predator strength of all populations
     /// @param max_predator_strength maximum predator strength of a species
-    void print_line_global_dispersal_info(resfile_type f,
+    void print_line_global_info(resfile_type f,
                                           double time,
                                           size_t number_of_species,
                                           size_t number_of_populations,
+                                          size_t min_foodweb_size,
+                                          double mean_foodweb_size,
+                                          size_t max_foodweb_size,
                                           size_t min_distribution,
                                           double mean_distribution,
                                           size_t max_distribution,

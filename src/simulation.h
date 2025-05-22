@@ -10,6 +10,7 @@
 #include "foodweb.h"
 #include "species.h"
 #include "output.h"
+#include <chrono>
 
 class Simulation
 {
@@ -28,10 +29,29 @@ public:
 
     int m_result;
 
+    enum LogType
+    {
+        INTERVAL = 0,
+        SAVE = 1,
+        LOG_TYPE_COUNT
+    };
+
 private:
     /// @brief FKA basic init
     Simulation(SimulationSettings settings, std::string output_path, double speciations_per_patch, std::vector<std::string> muted_outputs);
     
+    struct TimeComponents {
+        size_t hours;
+        size_t minutes;
+        size_t seconds;
+    };
+
+    static TimeComponents split_time(int64_t seconds_to_split);
+
+    void print_time(LogType type);
+
+    inline const char* logTypeToString(LogType type);
+
     void create_folder(std::string path);
 
     SimulationSettings m_settings;
@@ -107,7 +127,7 @@ private:
     void print_species();
 
     /// @brief Prints information about dispersion and dispersal of all populations and species
-    void print_global_dispersal_info();
+    void print_global_info();
 
     /// @brief Prints the number and the fraction of foodwebs with more species than the resource
     void print_alive_foodwebs();
@@ -167,6 +187,15 @@ private:
     Foodweb ***m_foodwebs;
 
     Output *m_output;
+
+    std::chrono::steady_clock::time_point m_start_time;
+
+    std::chrono::steady_clock::time_point m_last_log_time[LOG_TYPE_COUNT];
+
+    int64_t m_elapsed_seconds[LOG_TYPE_COUNT];
+    int64_t m_last_elapsed_seconds[LOG_TYPE_COUNT];
+    double m_progress[LOG_TYPE_COUNT];
+    double m_last_progress[LOG_TYPE_COUNT];
 
     enum ErrorCodes
     {
