@@ -818,9 +818,10 @@ void Simulation::print_global_info()
                 if (max_distribution < m_population_count[i])
                 {
                     max_distribution = m_population_count[i];
-
-                    mean_dispersal_rate_species_uint += m_species[i]->m_dispersal_rate;
                 }
+
+                mean_dispersal_rate_species_uint += m_species[i]->m_dispersal_rate;
+                
                 if (min_dispersal_rate_uint > m_species[i]->m_dispersal_rate)
                 {
                     min_dispersal_rate_uint = m_species[i]->m_dispersal_rate;
