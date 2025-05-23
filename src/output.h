@@ -157,23 +157,29 @@ public:
     /// @param mean_predator_strength_populations mean predator strength of all populations
     /// @param max_predator_strength maximum predator strength of a species
     void print_line_global_info(resfile_type f,
-                                          double time,
-                                          size_t number_of_species,
-                                          size_t number_of_populations,
-                                          size_t min_foodweb_size,
-                                          double mean_foodweb_size,
-                                          size_t max_foodweb_size,
-                                          size_t min_distribution,
-                                          double mean_distribution,
-                                          size_t max_distribution,
-                                          double min_dispersal_rate,
-                                          double mean_dispersal_rate_species,
-                                          double mean_dispersal_rate_populations,
-                                          double max_dispersal_rate,
-                                          double min_predator_strength,
-                                          double mean_predator_strength_species,
-                                          double mean_predator_strength_populations,
-                                          double max_predator_strength);
+                                double time,
+                                uint64_t successful_speciation_counter,
+                                uint64_t failed_speciation_counter,
+                                uint64_t successful_disperal_counter,
+                                uint64_t failed_disperal_counter,
+                                double lower_bound_of_tl_class,
+                                double upper_bound_of_tl_class,
+                                size_t number_of_species,
+                                size_t number_of_populations,
+                                size_t min_foodweb_size,
+                                double mean_foodweb_size,
+                                size_t max_foodweb_size,
+                                size_t min_distribution,
+                                double mean_distribution,
+                                size_t max_distribution,
+                                double min_dispersal_rate,
+                                double mean_dispersal_rate_species,
+                                double mean_dispersal_rate_populations,
+                                double max_dispersal_rate,
+                                double min_predator_strength,
+                                double mean_predator_strength_species,
+                                double mean_predator_strength_populations,
+                                double max_predator_strength);
 
     /// @brief Prints the number and the fraction of foodwebs with more species than the resource
     /// @param f OUT_ALIVE_FOODWEBS
@@ -181,10 +187,10 @@ public:
     /// @param number_of_alive_foodwebs number of foodwebs with more species than the resource
     /// @param fraction_of_alive_foodwebs fraction of foodwebs with more species than the resource
     void print_line_alive_foodwebs(resfile_type f,
-                            double time,
-                            size_t number_of_alive_foodwebs,
-                            double fraction_of_alive_foodwebs);  
-    
+                                   double time,
+                                   size_t number_of_alive_foodwebs,
+                                   double fraction_of_alive_foodwebs);
+
     /// @brief Prints the lifetime of all ever lived species binned and sorted by trophic level
     /// @param f OUT_LIFETIME_DISTRIBUTION
     /// @param time current time of the simulation
@@ -210,7 +216,7 @@ private:
     // /// @param step step to round to
     // double round_step(double x, double step);
 
-    /// @brief calculates the tl_class of a trophic level, depending on inverted_binsize_of_tl_class
+    /// @brief calculates the tl_class of a trophic level, depending on INVERTED_BINSIZE_OF_TL_CLASS
     /// @param trophic_level trophic level of the species
     /// @return tl_class of the species
     size_t calc_tl_class(double trophic_level);
@@ -235,18 +241,15 @@ private:
     /// @return Slope of the lifetime distribution OR reason why it could not be calculated
     std::string calc_LTD_slope(size_t tl_class);
 
-    /// @brief // Returns the width of a logarithmic bin depending on inverted_binsize. Bins are defined based on powers of 10 with fractional exponent steps
+    /// @brief // Returns the width of a logarithmic bin depending on INVERTED_BINSIZE. Bins are defined based on powers of 10 with fractional exponent steps
     /// @param bin Bin number
     /// @return Width of the bin
     double bin_width(size_t bin);
 
-    /// @brief Returns the midpoint position of a logarithmic bin depending on inverted_binsize 
+    /// @brief Returns the midpoint position of a logarithmic bin depending on INVERTED_BINSIZE
     /// @param bin Bin number
     /// @return Midpoint position of the bin
     double bin_pos(size_t bin);
-
-    /// @brief Smallest double value that can be represented reliably
-    const double machine_epsilon = 1e-12;
 
     /// @brief One bit per channel;
     ///
@@ -278,13 +281,16 @@ private:
     double smallest_lifetime_exponent;
 
     /// @brief The expected smallest time interval depends via the dispersal rate on a predator strength of 0.5. (by experience)
-    const double expected_mean_dispersal_strength = 0.5;
+    static constexpr double EXPECTED_MEAN_DISPERSAL_STRENGTH = 0.5;
 
     /// @brief Number of bins between 10^x and 10^(x+1)
-    const double inverted_binsize = 10.0;
+    static constexpr double INVERTED_BINSIZE = 10.0;
 
     /// @brief Number of tl class bins between n and n+1
-    const double inverted_binsize_of_tl_class = 3.0;
+    static constexpr double INVERTED_BINSIZE_OF_TL_CLASS = 1.0;
+
+    /// @brief Smallest double value that can be represented reliably
+    static constexpr double MACHINE_EPSILON = 1e-12;
 };
 
 #endif // OUTPUT_H

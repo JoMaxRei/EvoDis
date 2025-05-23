@@ -93,7 +93,7 @@ public:
     uint64_t m_local_dispersal_rate;
 
     /// @brief maximum number of species that can live in a foodweb
-    static const size_t MAX_DIM = 100;
+    static constexpr size_t MAX_DIM = 100;
 
 
 private:

@@ -45,6 +45,10 @@ Simulation::Simulation(BaseSettings base_settings, SimulationSettings settings) 
     );
 
     m_speciation_counter = 1;
+    m_successful_speciation_counter = 1;
+    m_failed_speciation_counter = 0;
+    m_successful_disperal_counter = 0;
+    m_failed_disperal_counter = 0;
 
     size_t next_index = m_free_indices.back();
     m_free_indices.pop_back();
@@ -179,8 +183,13 @@ Simulation::Simulation(SimulationSettings settings, std::string output_path, dou
 Simulation::TimeComponents Simulation::split_time(int64_t seconds_to_split)
 {
     TimeComponents time;
+    time.days = static_cast<size_t>(seconds_to_split / 86400);
+    seconds_to_split %= 86400;
+
     time.hours = static_cast<size_t>(seconds_to_split / 3600);
-    time.minutes = static_cast<size_t>((seconds_to_split % 3600) / 60);
+    seconds_to_split %= 3600;
+
+    time.minutes = static_cast<size_t>(seconds_to_split / 60);
     time.seconds = static_cast<size_t>(seconds_to_split % 60);
     return time;
 }
@@ -203,27 +212,29 @@ void Simulation::print_time(LogType type)
     auto time_left = Simulation::split_time(estimated_seconds_left);
     auto time_total = Simulation::split_time(estimated_seconds_left + m_elapsed_seconds[type]);
 
-    LOG(INFO)  << logTypeToString(type) << " - [Progress]             - "
-                << m_t << " / " << m_speciations_per_patch
-                << " (" << 100 * m_progress[type] << "%)";
-    LOG(INFO)  << logTypeToString(type) << " - [Elapsed time]         - "
-                << time.hours << "h " << time.minutes << "m " << time.seconds << "s";
-    LOG(INFO)  << logTypeToString(type) << " - [Estimated time left]  - "
-                << time_left.hours << "h " << time_left.minutes << "m " << time_left.seconds << "s";
-    LOG(INFO)  << logTypeToString(type) << " - [Total estimated time] - "
-                << time_total.hours << "h " << time_total.minutes << "m " << time_total.seconds << "s";
+    LOG(INFO) << logTypeToString(type) << " - [Progress]             - "
+              << m_t << " / " << m_speciations_per_patch
+              << " (" << 100 * m_progress[type] << "%)";
+    LOG(INFO) << logTypeToString(type) << " - [Elapsed time]         - "
+              << time.days << "d " << time.hours << "h " << time.minutes << "m " << time.seconds << "s";
+    LOG(INFO) << logTypeToString(type) << " - [Estimated time left]  - "
+              << time_left.days << "d " << time_left.hours << "h " << time_left.minutes << "m " << time_left.seconds << "s";
+    LOG(INFO) << logTypeToString(type) << " - [Total estimated time] - "
+              << time_total.days << "d " << time_total.hours << "h " << time_total.minutes << "m " << time_total.seconds << "s";
 }
 
-inline const char* Simulation::logTypeToString(LogType type)
+inline const char *Simulation::logTypeToString(LogType type)
 {
     switch (type)
     {
-    case INTERVAL: return "[INTERVAL]";
-    case SAVE:     return "[SAVE]    ";
-    default:       return "UNKNOWN";
+    case INTERVAL:
+        return "[INTERVAL]";
+    case SAVE:
+        return "[SAVE]    ";
+    default:
+        return "UNKNOWN";
     }
 }
-
 
 void Simulation::create_folder(std::string path)
 {
@@ -240,12 +251,12 @@ void Simulation::run()
     double time_of_next_save = m_save_interval;
 
     m_start_time = std::chrono::steady_clock::now();
-    
+
     std::fill(std::begin(m_last_log_time), std::end(m_last_log_time), m_start_time);
 
     std::fill(std::begin(m_elapsed_seconds), std::end(m_elapsed_seconds), 0);
     std::fill(std::begin(m_last_elapsed_seconds), std::end(m_last_elapsed_seconds), 0);
-    
+
     std::fill(std::begin(m_progress), std::end(m_progress), 0.0);
     std::fill(std::begin(m_last_progress), std::end(m_last_progress), 0.0);
 
@@ -292,10 +303,26 @@ void Simulation::run()
             if (event_is_speciation)
             {
                 recalculate_equilibrium = handle_speciation(x, y);
+                if (recalculate_equilibrium)
+                {
+                    m_successful_speciation_counter++;
+                }
+                else
+                {
+                    m_failed_speciation_counter++;
+                }
             }
             else
             {
                 recalculate_equilibrium = handle_dispersal(x, y);
+                if (recalculate_equilibrium)
+                {
+                    m_successful_disperal_counter++;
+                }
+                else
+                {
+                    m_failed_disperal_counter++;
+                }
             }
 
             if (recalculate_equilibrium)
@@ -756,124 +783,252 @@ void Simulation::print_global_info()
     {
         // LOG(INFO) << "print global info";
 
-        // double time;
-        // size_t number_of_species;
-        // size_t number_of_populations;
-        size_t min_foodweb_size = Foodweb::MAX_DIM;
-        double mean_foodweb_size;
-        size_t mean_foodweb_size_uint = 0;
-        size_t max_foodweb_size = 0;
-        size_t min_distribution = m_settings.number_of_habitats();
-        double mean_distribution;
-        size_t mean_distribution_uint = 0;
-        size_t max_distribution = 0;
-        double min_dispersal_rate;
-        uint64_t min_dispersal_rate_uint = m_total_dispersal_rate;
-        double mean_dispersal_rate_species;
-        uint64_t mean_dispersal_rate_species_uint = 0;
-        double mean_dispersal_rate_populations = static_cast<double>(m_total_dispersal_rate) / static_cast<double>(m_settings.speciation_rate_per_population) / static_cast<double>(m_number_of_living_populations);
-        double max_dispersal_rate;
-        uint64_t max_dispersal_rate_uint = 0;
-        double min_predator_strength = 1.0;
-        double mean_predator_strength_species = 0.0;
-        double mean_predator_strength_populations = 0.0;
-        double max_predator_strength = 0.0;
-
-        for (size_t i = 0; i < m_settings.grid_length; i++)
-        {
-            for (size_t j = 0; j < m_settings.grid_length; j++)
-            {
-                if (m_foodwebs[i][j]->get_dimension() < min_foodweb_size)
-                {
-                    min_foodweb_size = m_foodwebs[i][j]->get_dimension();
-                }
-                if (m_foodwebs[i][j]->get_dimension() > max_foodweb_size)
-                {
-                    max_foodweb_size = m_foodwebs[i][j]->get_dimension();
-                }
-
-                mean_foodweb_size_uint += m_foodwebs[i][j]->get_dimension();
-
-                for (size_t k = 1; k < m_foodwebs[i][j]->get_dimension(); k++)
-                {
-                    mean_predator_strength_populations += m_foodwebs[i][j]->get_species(k)->m_predator_strength;
-                }
-            }
-        }
-
-        mean_foodweb_size = static_cast<double>(mean_foodweb_size_uint) / static_cast<double>(m_settings.number_of_habitats());
-
-        mean_predator_strength_populations /= static_cast<double>(m_number_of_living_populations);
+        double maximum_trophic_level = 0.0;
 
         for (size_t i = 1; i < m_settings.maximum_species_number(); i++)
         {
             if (m_species[i] != NULL)
             {
-                mean_distribution_uint += m_population_count[i];
-
-                if (min_distribution > m_population_count[i])
+                if (m_species[i]->get_trophic_level() > maximum_trophic_level)
                 {
-                    min_distribution = m_population_count[i];
-                }
-                if (max_distribution < m_population_count[i])
-                {
-                    max_distribution = m_population_count[i];
-                }
-
-                mean_dispersal_rate_species_uint += m_species[i]->m_dispersal_rate;
-                
-                if (min_dispersal_rate_uint > m_species[i]->m_dispersal_rate)
-                {
-                    min_dispersal_rate_uint = m_species[i]->m_dispersal_rate;
-                }
-                if (max_dispersal_rate_uint < m_species[i]->m_dispersal_rate)
-                {
-                    max_dispersal_rate_uint = m_species[i]->m_dispersal_rate;
-                }
-
-                mean_predator_strength_species += m_species[i]->m_predator_strength;
-
-                if (min_predator_strength > m_species[i]->m_predator_strength)
-                {
-                    min_predator_strength = m_species[i]->m_predator_strength;
-                }
-                if (max_predator_strength < m_species[i]->m_predator_strength)
-                {
-                    max_predator_strength = m_species[i]->m_predator_strength;
+                    maximum_trophic_level = m_species[i]->get_trophic_level();
                 }
             }
         }
 
-        mean_distribution = static_cast<double>(mean_distribution_uint) / static_cast<double>(m_number_of_living_species);
+        size_t number_of_tl_bins = calc_tl_class(maximum_trophic_level);
+        std::vector<double> lower_bound_of_tl_class(number_of_tl_bins + 1, 0);
+        std::vector<double> upper_bound_of_tl_class(number_of_tl_bins + 1, 0);
 
-        mean_dispersal_rate_species = static_cast<double>(mean_dispersal_rate_species_uint) / static_cast<double>(m_settings.speciation_rate_per_population) / static_cast<double>(m_number_of_living_species);
+        lower_bound_of_tl_class[0] = -1.0;
+        upper_bound_of_tl_class[0] = -1.0;
+        // lower_bound_of_tl_class[0] = (                                   1.0 - 0.5) / INVERTED_BINSIZE_OF_TL_CLASS;
+        // upper_bound_of_tl_class[0] = (static_cast<double>(number_of_tl_bins) + 0.5) / INVERTED_BINSIZE_OF_TL_CLASS;
 
-        min_dispersal_rate = static_cast<double>(min_dispersal_rate_uint) / static_cast<double>(m_settings.speciation_rate_per_population);
-        max_dispersal_rate = static_cast<double>(max_dispersal_rate_uint) / static_cast<double>(m_settings.speciation_rate_per_population);
+        for (size_t tl_class = 1; tl_class < number_of_tl_bins + 1; tl_class++)
+        {
+            lower_bound_of_tl_class[tl_class] = (static_cast<double>(tl_class) - 0.5) / INVERTED_BINSIZE_OF_TL_CLASS;
+            upper_bound_of_tl_class[tl_class] = (static_cast<double>(tl_class) + 0.5) / INVERTED_BINSIZE_OF_TL_CLASS;
+        }
 
-        mean_predator_strength_species /= static_cast<double>(m_number_of_living_species);
+        std::vector<size_t> number_of_living_populations(number_of_tl_bins + 1, 0);
+        std::vector<size_t> number_of_living_species(number_of_tl_bins + 1, 0);
+
+        std::vector<size_t> min_foodweb_size(number_of_tl_bins + 1, Foodweb::MAX_DIM);
+        std::vector<double> mean_foodweb_size(number_of_tl_bins + 1, 0.0);
+        std::vector<size_t> mean_foodweb_size_uint(number_of_tl_bins + 1, 0);
+        std::vector<size_t> max_foodweb_size(number_of_tl_bins + 1, 0);
+
+        std::vector<size_t> min_distribution(number_of_tl_bins + 1, m_settings.number_of_habitats());
+        std::vector<double> mean_distribution(number_of_tl_bins + 1, 0.0);
+        std::vector<size_t> mean_distribution_uint(number_of_tl_bins + 1, 0);
+        std::vector<size_t> max_distribution(number_of_tl_bins + 1, 0);
+
+        std::vector<double> min_dispersal_rate(number_of_tl_bins + 1, 0.0); // Wert ggf. spezifizieren
+        std::vector<uint64_t> min_dispersal_rate_uint(number_of_tl_bins + 1, m_total_dispersal_rate);
+        std::vector<double> mean_dispersal_rate_species(number_of_tl_bins + 1, 0.0);
+        std::vector<uint64_t> mean_dispersal_rate_species_uint(number_of_tl_bins + 1, 0);
+        std::vector<double> mean_dispersal_rate_populations(number_of_tl_bins + 1, 0.0);
+        std::vector<uint64_t> mean_dispersal_rate_populations_uint(number_of_tl_bins + 1, 0);
+        std::vector<double> max_dispersal_rate(number_of_tl_bins + 1, 0.0);
+        std::vector<uint64_t> max_dispersal_rate_uint(number_of_tl_bins + 1, 0);
+
+        std::vector<double> min_predator_strength(number_of_tl_bins + 1, 1.0);
+        std::vector<double> mean_predator_strength_species(number_of_tl_bins + 1, 0.0);
+        std::vector<double> mean_predator_strength_populations(number_of_tl_bins + 1, 0.0);
+        std::vector<double> max_predator_strength(number_of_tl_bins + 1, 0.0);
+
+        // size_t min_foodweb_size = Foodweb::MAX_DIM;
+        // double mean_foodweb_size;
+        // size_t mean_foodweb_size_uint = 0;
+        // size_t max_foodweb_size = 0;
+        // size_t min_distribution = m_settings.number_of_habitats();
+        // double mean_distribution;
+        // size_t mean_distribution_uint = 0;
+        // size_t max_distribution = 0;
+        // double min_dispersal_rate;
+        // uint64_t min_dispersal_rate_uint = m_total_dispersal_rate;
+        // double mean_dispersal_rate_species;
+        // uint64_t mean_dispersal_rate_species_uint = 0;
+        // double mean_dispersal_rate_populations = static_cast<double>(m_total_dispersal_rate) / static_cast<double>(m_settings.speciation_rate_per_population) / static_cast<double>(m_number_of_living_populations);
+        // double max_dispersal_rate;
+        // uint64_t max_dispersal_rate_uint = 0;
+        // double min_predator_strength = 1.0;
+        // double mean_predator_strength_species = 0.0;
+        // double mean_predator_strength_populations = 0.0;
+        // double max_predator_strength = 0.0;
+
+        for (size_t i = 0; i < m_settings.grid_length; i++)
+        {
+            for (size_t j = 0; j < m_settings.grid_length; j++)
+            {
+                std::vector<size_t> number_of_populations_in_foodweb(number_of_tl_bins + 1, 0);
+
+                for (size_t k = 1; k < m_foodwebs[i][j]->get_dimension(); k++)
+                {
+                    size_t tl_class = calc_tl_class(m_foodwebs[i][j]->get_species(k)->get_trophic_level());
+
+                    number_of_living_populations[0] += 1;
+                    number_of_living_populations[tl_class] += 1;
+
+                    number_of_populations_in_foodweb[0] += 1;
+                    number_of_populations_in_foodweb[tl_class] += 1;
+
+                    mean_dispersal_rate_populations_uint[0] += m_foodwebs[i][j]->get_species(k)->m_dispersal_rate;
+                    mean_dispersal_rate_populations_uint[tl_class] += m_foodwebs[i][j]->get_species(k)->m_dispersal_rate;
+
+                    mean_predator_strength_populations[0] += m_foodwebs[i][j]->get_species(k)->m_predator_strength;
+                    mean_predator_strength_populations[tl_class] += m_foodwebs[i][j]->get_species(k)->m_predator_strength;
+                }
+
+                for (size_t tl_class = 0; tl_class < number_of_tl_bins + 1; tl_class++)
+                {
+                    if (number_of_populations_in_foodweb[tl_class] < min_foodweb_size[tl_class])
+                    {
+                        min_foodweb_size[tl_class] = number_of_populations_in_foodweb[tl_class];
+                    }
+
+                    if (number_of_populations_in_foodweb[tl_class] > max_foodweb_size[tl_class])
+                    {
+                        max_foodweb_size[tl_class] = number_of_populations_in_foodweb[tl_class];
+                    }
+
+                    mean_foodweb_size_uint[tl_class] += number_of_populations_in_foodweb[tl_class];
+                }
+            }
+        }
+
+        for (size_t tl_class = 0; tl_class < number_of_tl_bins + 1; tl_class++)
+        {
+
+            mean_foodweb_size[tl_class] = static_cast<double>(mean_foodweb_size_uint[tl_class]) / static_cast<double>(m_settings.number_of_habitats());
+
+            mean_dispersal_rate_populations[tl_class] = static_cast<double>(mean_dispersal_rate_populations_uint[tl_class]) / static_cast<double>(m_settings.speciation_rate_per_population) / static_cast<double>(number_of_living_populations[tl_class]);
+
+            mean_predator_strength_populations[tl_class] /= static_cast<double>(number_of_living_populations[tl_class]);
+        }
+
+        for (size_t i = 1; i < m_settings.maximum_species_number(); i++)
+        {
+            if (m_species[i] != NULL)
+            {
+                size_t tl_class = calc_tl_class(m_species[i]->get_trophic_level());
+
+                number_of_living_species[0] += 1;
+                number_of_living_species[tl_class] += 1;
+
+                mean_distribution_uint[0] += m_population_count[i];
+                mean_distribution_uint[tl_class] += m_population_count[i];
+
+                if (min_distribution[0] > m_population_count[i])
+                {
+                    min_distribution[0] = m_population_count[i];
+                }
+                if (min_distribution[tl_class] > m_population_count[i])
+                {
+                    min_distribution[tl_class] = m_population_count[i];
+                }
+
+                if (max_distribution[0] < m_population_count[i])
+                {
+                    max_distribution[0] = m_population_count[i];
+                }
+                if (max_distribution[tl_class] < m_population_count[i])
+                {
+                    max_distribution[tl_class] = m_population_count[i];
+                }
+
+                mean_dispersal_rate_species_uint[0] += m_species[i]->m_dispersal_rate;
+                mean_dispersal_rate_species_uint[tl_class] += m_species[i]->m_dispersal_rate;
+
+                if (min_dispersal_rate_uint[0] > m_species[i]->m_dispersal_rate)
+                {
+                    min_dispersal_rate_uint[0] = m_species[i]->m_dispersal_rate;
+                }
+                if (min_dispersal_rate_uint[tl_class] > m_species[i]->m_dispersal_rate)
+                {
+                    min_dispersal_rate_uint[tl_class] = m_species[i]->m_dispersal_rate;
+                }
+
+                if (max_dispersal_rate_uint[0] < m_species[i]->m_dispersal_rate)
+                {
+                    max_dispersal_rate_uint[0] = m_species[i]->m_dispersal_rate;
+                }
+                if (max_dispersal_rate_uint[tl_class] < m_species[i]->m_dispersal_rate)
+                {
+                    max_dispersal_rate_uint[tl_class] = m_species[i]->m_dispersal_rate;
+                }
+
+                mean_predator_strength_species[0] += m_species[i]->m_predator_strength;
+                mean_predator_strength_species[tl_class] += m_species[i]->m_predator_strength;
+
+                if (min_predator_strength[0] > m_species[i]->m_predator_strength)
+                {
+                    min_predator_strength[0] = m_species[i]->m_predator_strength;
+                }
+                if (min_predator_strength[tl_class] > m_species[i]->m_predator_strength)
+                {
+                    min_predator_strength[tl_class] = m_species[i]->m_predator_strength;
+                }
+
+                if (max_predator_strength[0] < m_species[i]->m_predator_strength)
+                {
+                    max_predator_strength[0] = m_species[i]->m_predator_strength;
+                }
+                if (max_predator_strength[tl_class] < m_species[i]->m_predator_strength)
+                {
+                    max_predator_strength[tl_class] = m_species[i]->m_predator_strength;
+                }
+            }
+        }
+
+        for (size_t tl_class = 0; tl_class < number_of_tl_bins + 1; tl_class++)
+        {
+            mean_distribution[tl_class] = static_cast<double>(mean_distribution_uint[tl_class]) / static_cast<double>(number_of_living_species[tl_class]);
+
+            mean_dispersal_rate_species[tl_class] = static_cast<double>(mean_dispersal_rate_species_uint[tl_class]) / static_cast<double>(m_settings.speciation_rate_per_population) / static_cast<double>(number_of_living_species[tl_class]);
+
+            min_dispersal_rate[tl_class] = static_cast<double>(min_dispersal_rate_uint[tl_class]) / static_cast<double>(m_settings.speciation_rate_per_population);
+            max_dispersal_rate[tl_class] = static_cast<double>(max_dispersal_rate_uint[tl_class]) / static_cast<double>(m_settings.speciation_rate_per_population);
+
+            mean_predator_strength_species[tl_class] /= static_cast<double>(number_of_living_species[tl_class]);
+        }
 
         m_output->open_file(Output::OUT_GLOBAL_INFO);
-        m_output->print_line_global_info(Output::OUT_GLOBAL_INFO,
-                                                   m_t,
-                                                   m_number_of_living_species,
-                                                   m_number_of_living_populations,
-                                                   min_foodweb_size,
-                                                   mean_foodweb_size,
-                                                   max_foodweb_size,
-                                                   min_distribution,
-                                                   mean_distribution,
-                                                   max_distribution,
-                                                   min_dispersal_rate,
-                                                   mean_dispersal_rate_species,
-                                                   mean_dispersal_rate_populations,
-                                                   max_dispersal_rate,
-                                                   min_predator_strength,
-                                                   mean_predator_strength_species,
-                                                   mean_predator_strength_populations,
-                                                   max_predator_strength);
+        for (size_t tl_class = 0; tl_class < number_of_tl_bins + 1; tl_class++)
+        {
+            m_output->print_line_global_info(Output::OUT_GLOBAL_INFO,
+                                             m_t,
+                                             m_successful_speciation_counter,
+                                             m_failed_speciation_counter,
+                                             m_successful_disperal_counter,
+                                             m_failed_disperal_counter,
+                                             lower_bound_of_tl_class[tl_class],
+                                             upper_bound_of_tl_class[tl_class],
+                                             number_of_living_species[tl_class],
+                                             number_of_living_populations[tl_class],
+                                             min_foodweb_size[tl_class],
+                                             mean_foodweb_size[tl_class],
+                                             max_foodweb_size[tl_class],
+                                             min_distribution[tl_class],
+                                             mean_distribution[tl_class],
+                                             max_distribution[tl_class],
+                                             min_dispersal_rate[tl_class],
+                                             mean_dispersal_rate_species[tl_class],
+                                             mean_dispersal_rate_populations[tl_class],
+                                             max_dispersal_rate[tl_class],
+                                             min_predator_strength[tl_class],
+                                             mean_predator_strength_species[tl_class],
+                                             mean_predator_strength_populations[tl_class],
+                                             max_predator_strength[tl_class]);
+        }
         m_output->close_file(Output::OUT_GLOBAL_INFO);
     }
+}
+
+size_t Simulation::calc_tl_class(double trophic_level)
+{
+    return static_cast<size_t>(std::round(trophic_level * INVERTED_BINSIZE_OF_TL_CLASS) + MACHINE_EPSILON);
 }
 
 void Simulation::print_alive_foodwebs()

@@ -41,6 +41,7 @@ private:
     Simulation(SimulationSettings settings, std::string output_path, double speciations_per_patch, std::vector<std::string> muted_outputs);
     
     struct TimeComponents {
+        size_t days;
         size_t hours;
         size_t minutes;
         size_t seconds;
@@ -129,6 +130,11 @@ private:
     /// @brief Prints information about dispersion and dispersal of all populations and species
     void print_global_info();
 
+    /// @brief calculates the tl_class of a trophic level, depending on INVERTED_BINSIZE_OF_TL_CLASS
+    /// @param trophic_level trophic level of the species
+    /// @return tl_class of the species
+    size_t calc_tl_class(double trophic_level);
+
     /// @brief Prints the number and the fraction of foodwebs with more species than the resource
     void print_alive_foodwebs();
 
@@ -150,8 +156,20 @@ private:
     /// @brief Simulation time
     double m_t;
 
-    /// @brief Counts the number of speciations that took place
+    /// @brief Counts the number of speciation events that took place
     uint64_t m_speciation_counter;
+
+    /// @brief Counts the number of successful speciation events that took place
+    uint64_t m_successful_speciation_counter;
+
+    /// @brief Counts the number of speciation events that took place
+    uint64_t m_failed_speciation_counter;
+
+    /// @brief Counts the number of successful disperal events that took place
+    uint64_t m_successful_disperal_counter;
+
+    /// @brief Counts the number of disperal events that took place
+    uint64_t m_failed_disperal_counter;
 
     /// @brief Saving interval
     double m_save_interval;
@@ -196,6 +214,12 @@ private:
     int64_t m_last_elapsed_seconds[LOG_TYPE_COUNT];
     double m_progress[LOG_TYPE_COUNT];
     double m_last_progress[LOG_TYPE_COUNT];
+
+    /// @brief Number of tl class bins between n and n+1
+    static constexpr double INVERTED_BINSIZE_OF_TL_CLASS = 1.0;
+
+    /// @brief Smallest double value that can be represented reliably
+    static constexpr double MACHINE_EPSILON = 1e-12;
 
     enum ErrorCodes
     {

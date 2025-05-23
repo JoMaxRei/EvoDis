@@ -19,10 +19,10 @@ Output::Output(std::string path, size_t _number_of_habitats, double initial_disp
     // The aim is to obtain a function that determines the associated smallest bin depending on the expected smallest time interval.
     // The smallest time interval depends on the number of habitats and the mean dispersal rate of the populations.
     // From experience, the mean dispersal rate corresponds approximately to that of a species with a predator strength of 0.5.
-    double expected_mean_dispersal_rate = zero_crossing * std::pow(10, expected_mean_dispersal_strength * std::log10(initial_dispersal_rate / zero_crossing));
+    double expected_mean_dispersal_rate = zero_crossing * std::pow(10, EXPECTED_MEAN_DISPERSAL_STRENGTH * std::log10(initial_dispersal_rate / zero_crossing));
     double t_min = 1.0 / (1.0 + expected_mean_dispersal_rate) / static_cast<double>(number_of_habitats);
 
-    smallest_lifetime_exponent = -floor_step(std::log10(t_min), 1.0 / inverted_binsize);
+    smallest_lifetime_exponent = -floor_step(std::log10(t_min), 1.0 / INVERTED_BINSIZE);
 }
 
 void Output::create_file_names(const std::string &path)
@@ -69,62 +69,68 @@ bool Output::create_new_files()
         case OUT_HABITAT_SPECIES:
             file[i] << "time" << "\t"
                     << "habitat" << "\t"
-                    << "universal_id" << "\t"
+                    << "universal id" << "\t"
                     << "fitness" << std::endl;
             break;
 
         case OUT_LIVING_SPECIES:
             file[i] << "time" << "\t"
-                    << "universal_id" << "\t"
-                    << "first_occurence" << "\t"
+                    << "universal id" << "\t"
+                    << "first occurence" << "\t"
                     << "bodymass" << "\t"
-                    << "feeding_center" << "\t"
-                    << "feeding_range" << "\t"
-                    << "dispersal_rate" << "\t"
-                    << "predator_strength" << "\t"
-                    << "population_count" << "\t"
-                    << "mean_trophic_level" << std::endl;
+                    << "feeding center" << "\t"
+                    << "feeding range" << "\t"
+                    << "dispersal rate" << "\t"
+                    << "predator strength" << "\t"
+                    << "population count" << "\t"
+                    << "mean trophic level" << std::endl;
             break;
 
         case OUT_TROPHIC_LEVELS:
             file[i] << "time" << "\t"
                     << "habitat" << "\t"
                     << "dimension" << "\t"
-                    << "mean_trophic_level" << "\t"
-                    << "max_trophic_level" << std::endl;
+                    << "mean trophic level" << "\t"
+                    << "max trophic level" << std::endl;
             break;
 
         case OUT_GLOBAL_INFO:
             file[i] << "time" << "\t"
-                    << "number_of_species" << "\t"
-                    << "number_of_populations" << "\t"
-                    << "min_foodweb_size" << "\t"
-                    << "mean_foodweb_size" << "\t"
-                    << "max_foodweb_size" << "\t"
-                    << "min_distribution" << "\t"
-                    << "mean_distribution" << "\t"
-                    << "max_distribution" << "\t"
-                    << "min_dispersal_rate" << "\t"
-                    << "mean_dispersal_rate_species" << "\t"
-                    << "mean_dispersal_rate_populations" << "\t"
-                    << "max_dispersal_rate" << "\t"
-                    << "min_predator_strength" << "\t"
-                    << "mean_predator_strength_species" << "\t"
-                    << "mean_predator_strength_populations" << "\t"
-                    << "max_predator_strength" << std::endl;
+                    << "successful speciation counter" << "\t"
+                    << "failed speciation counter" << "\t"
+                    << "successful disperal counter" << "\t"
+                    << "failed disperal counter" << "\t"
+                    << "lower bound of tl class" << "\t"
+                    << "upper bound of tl class" << "\t"
+                    << "number of species" << "\t"
+                    << "number of populations" << "\t"
+                    << "min foodweb size" << "\t"
+                    << "mean foodweb size" << "\t"
+                    << "max foodweb size" << "\t"
+                    << "min distribution" << "\t"
+                    << "mean distribution" << "\t"
+                    << "max distribution" << "\t"
+                    << "min dispersal rate" << "\t"
+                    << "mean dispersal rate species" << "\t"
+                    << "mean dispersal rate populations" << "\t"
+                    << "max dispersal rate" << "\t"
+                    << "min predator strength" << "\t"
+                    << "mean predator strength species" << "\t"
+                    << "mean predator strength populations" << "\t"
+                    << "max predator strength" << std::endl;
             break;
 
         case OUT_ALIVE_FOODWEBS:
             file[i] << "time" << "\t"
-                    << "number_of_alive_foodwebs" << "\t"
-                    << "fraction_of_alive_foodwebs" << std::endl;
+                    << "number of alive foodwebs" << "\t"
+                    << "fraction of alive foodwebs" << std::endl;
             break;
 
         case OUT_LIFETIME_DISTRIBUTION:
             file[i] << "time" << "\t"
                     << "interval" << "\t"
-                    << "tl_class" << std::endl;
-            file[i] << "bin content: smallest exponent is " << smallest_lifetime_exponent << " and number of bins between 10^x and 10^(x+1) is " << inverted_binsize << "" << std::endl;
+                    << "tl class" << std::endl;
+            file[i] << "bin content: smallest exponent is " << smallest_lifetime_exponent << " and number of bins between 10^x and 10^(x+1) is " << INVERTED_BINSIZE << "" << std::endl;
             file[i] << std::endl;
             break;
 
@@ -241,7 +247,7 @@ void Output::update_bins(double lifetime, double trophic_level)
 
 size_t Output::calc_tl_class(double trophic_level)
 {
-    return static_cast<size_t>(std::round(trophic_level * inverted_binsize_of_tl_class) + machine_epsilon);
+    return static_cast<size_t>(std::round(trophic_level * INVERTED_BINSIZE_OF_TL_CLASS) + MACHINE_EPSILON);
 }
 
 std::string Output::get_tl_interval_from_tl_class(size_t tl_class)
@@ -249,8 +255,8 @@ std::string Output::get_tl_interval_from_tl_class(size_t tl_class)
     if (tl_class == 0)
         return "[  0 ,  ∞ )";
 
-    double lower = (static_cast<double>(tl_class) - 0.5) / inverted_binsize_of_tl_class;
-    double upper = (static_cast<double>(tl_class) + 0.5) / inverted_binsize_of_tl_class;
+    double lower = (static_cast<double>(tl_class) - 0.5) / INVERTED_BINSIZE_OF_TL_CLASS;
+    double upper = (static_cast<double>(tl_class) + 0.5) / INVERTED_BINSIZE_OF_TL_CLASS;
 
     std::ostringstream oss;
     oss << std::fixed << std::setprecision(2);
@@ -267,11 +273,11 @@ size_t Output::get_curr_lifetime_bin(double lifetime)
     if (lifetime > 0.0)
     {
         // check if lifetime is smaller than the smallest lifetime bin
-        curr_lifetime_bin_d = (floor_step(std::log10(lifetime), 1. / static_cast<size_t>(inverted_binsize + machine_epsilon)) + smallest_lifetime_exponent) * static_cast<size_t>(inverted_binsize + machine_epsilon);
+        curr_lifetime_bin_d = (floor_step(std::log10(lifetime), 1. / static_cast<size_t>(INVERTED_BINSIZE + MACHINE_EPSILON)) + smallest_lifetime_exponent) * static_cast<size_t>(INVERTED_BINSIZE + MACHINE_EPSILON);
         if (curr_lifetime_bin_d < 0.0)
             return 0;
         else
-            return static_cast<size_t>(curr_lifetime_bin_d + machine_epsilon);
+            return static_cast<size_t>(curr_lifetime_bin_d + MACHINE_EPSILON);
     }
     else
         return 0;
@@ -314,7 +320,7 @@ std::string Output::calc_LTD_slope(size_t tl_class)
         {
             double width = bin_width(i);
 
-            if (width > machine_epsilon)
+            if (width > MACHINE_EPSILON)
             {
                 x.push_back(std::log10(bin_pos(i)));
                 y.push_back(std::log10(static_cast<double>(lifetime_bins[tl_class][i]) / width /* / total */));
@@ -352,7 +358,7 @@ std::string Output::calc_LTD_slope(size_t tl_class)
         denominator += (x[i] - avgX) * (x[i] - avgX);
     }
 
-    if (denominator < machine_epsilon && denominator > -machine_epsilon)
+    if (denominator < MACHINE_EPSILON && denominator > -MACHINE_EPSILON)
     {
         return "denominator is 0 for this trophic level interval";
     }
@@ -364,12 +370,12 @@ double Output::bin_width(size_t bin)
 {
     // Compute the upper and lower bounds of the bin using pow(10, ...)
     // floor and ceil are used to ensure numerical stability and integer alignment.
-    double width = 1. + floor(pow(10., static_cast<double>(bin) / inverted_binsize)) - ceil(pow(10., (static_cast<double>(bin) - 1.) / inverted_binsize));
+    double width = 1. + floor(pow(10., static_cast<double>(bin) / INVERTED_BINSIZE)) - ceil(pow(10., (static_cast<double>(bin) - 1.) / INVERTED_BINSIZE));
 
     // Correct for potential off-by-one rounding at decade boundaries.
-    // This occurs when the bin index is an exact multiple of inverted_binsize,
-    // e.g., bin = 10 for inverted_binsize = 10 (i.e., exact powers of 10).
-    if (std::abs(std::fmod(static_cast<double>(bin), inverted_binsize) - 1) < machine_epsilon)
+    // This occurs when the bin index is an exact multiple of INVERTED_BINSIZE,
+    // e.g., bin = 10 for INVERTED_BINSIZE = 10 (i.e., exact powers of 10).
+    if (std::abs(std::fmod(static_cast<double>(bin), INVERTED_BINSIZE) - 1) < MACHINE_EPSILON)
         width--;
 
     return width;
@@ -379,10 +385,10 @@ double Output::bin_pos(size_t bin)
 {
     // Estimate lower and upper bounds, then average them.
     // floor and ceil stabilize the values for nice, rounded midpoints.
-    double pos = floor(pow(10., static_cast<double>(bin) / inverted_binsize)) + ceil(pow(10., (static_cast<double>(bin) - 1.) / inverted_binsize));
+    double pos = floor(pow(10., static_cast<double>(bin) / INVERTED_BINSIZE)) + ceil(pow(10., (static_cast<double>(bin) - 1.) / INVERTED_BINSIZE));
 
     // Similar correction as in bin_width: adjust at decade boundaries.
-    if (std::abs(std::fmod(static_cast<double>(bin), inverted_binsize) - 1) < machine_epsilon)
+    if (std::abs(std::fmod(static_cast<double>(bin), INVERTED_BINSIZE) - 1) < MACHINE_EPSILON)
         pos++;
 
     pos /= 2.0;
@@ -542,6 +548,12 @@ void Output::print_line_trophic_levels(resfile_type f,
 
 void Output::print_line_global_info(resfile_type f,
                                     double time,
+                                    uint64_t successful_speciation_counter,
+                                    uint64_t failed_speciation_counter,
+                                    uint64_t successful_disperal_counter,
+                                    uint64_t failed_disperal_counter,
+                                    double lower_bound_of_tl_class,
+                                    double upper_bound_of_tl_class,
                                     size_t number_of_species,
                                     size_t number_of_populations,
                                     size_t min_foodweb_size,
@@ -568,6 +580,12 @@ void Output::print_line_global_info(resfile_type f,
         file[f].open(names[f].c_str(), std::ios::out | std::ios::app);
 
     file[f] << time << "\t"
+            << successful_speciation_counter << "\t"
+            << failed_speciation_counter << "\t"
+            << successful_disperal_counter << "\t"
+            << failed_disperal_counter << "\t"
+            << lower_bound_of_tl_class << "\t"
+            << upper_bound_of_tl_class << "\t"
             << number_of_species << "\t"
             << number_of_populations << "\t"
             << min_foodweb_size << "\t"
