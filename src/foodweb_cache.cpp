@@ -19,11 +19,11 @@ bool FoodwebCache::has_prey(Foodweb *target, Species *new_species)
     return false;
 }
 
-bool FoodwebCache::can_surive(Foodweb *target, Species *new_species, SimulationSettings settings)
+bool FoodwebCache::can_surive(Foodweb *target, Species *new_species, double time , SimulationSettings settings)
 {
     bool calculated = target->save_state();
 
-    size_t new_index = target->add_species(new_species);
+    size_t new_index = target->add_species(new_species, time);
 
     // //TODO: ONLY IF INTERESTED IN SPECIES THAT DID NOT SURVIVE AT LEAST ONCE
     // double new_trophic_level = target->calculate_trophic_level(new_index);

@@ -58,7 +58,7 @@ Simulation::Simulation(BaseSettings base_settings, SimulationSettings settings) 
     {
         for (size_t y = 0; y < settings.grid_length; y++)
         {
-            m_foodwebs[x][y]->add_species(m_species[1]);
+            m_foodwebs[x][y]->add_species(m_species[1], 0.0);
             m_foodwebs[x][y]->calculate(settings);
         }
     }
@@ -374,7 +374,7 @@ bool Simulation::handle_speciation(size_t &x, size_t &y)
         return false;
     }
 
-    if (!FoodwebCache::can_surive(m_foodwebs[x][y], new_species, m_settings)) // also adds species to foodweb
+    if (!FoodwebCache::can_surive(m_foodwebs[x][y], new_species, m_t, m_settings)) // also adds species to foodweb
     {
         // LOG(DEBUG) << "Speciation failed, species cannot survive";
         delete new_species;
@@ -452,7 +452,7 @@ bool Simulation::handle_dispersal(size_t &x, size_t &y)
         return false;
     }
 
-    if (!FoodwebCache::can_surive(m_foodwebs[x][y], dispersing_species, m_settings)) // also adds species to foodweb
+    if (!FoodwebCache::can_surive(m_foodwebs[x][y], dispersing_species, m_t, m_settings)) // also adds species to foodweb
     {
         // LOG(DEBUG) << "Dispersal failed, species cannot survive";
         return false;

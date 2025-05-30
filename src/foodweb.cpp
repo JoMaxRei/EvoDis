@@ -7,6 +7,8 @@ Foodweb::Foodweb(Species *resource)
 {
     m_species = new Species *[MAX_DIM];
     m_species[0] = resource;
+    m_appearance_time = new double [MAX_DIM];
+    m_appearance_time[0] = 0.0;
     m_fitness = new double[MAX_DIM];
     m_fitness[0] = 0.0;
     m_trophic_level = new double[MAX_DIM];
@@ -22,7 +24,7 @@ size_t Foodweb::get_dimension() const
     return m_species_count;
 }
 
-size_t Foodweb::add_species(Species *species)
+size_t Foodweb::add_species(Species *species, double appearance_time)
 {
     if (m_species_count >= MAX_DIM)
     {
@@ -35,12 +37,12 @@ size_t Foodweb::add_species(Species *species)
         if (species->m_bodymass < m_species[i]->m_bodymass)
         {
             m_species[i + 1] = m_species[i];
-            // appearance_time[i+1] = appearance_time[i];
+            m_appearance_time[i+1] = m_appearance_time[i];
         }
         else
         {
             m_species[i + 1] = species;
-            // appearance_time[i+1] = time;
+            m_appearance_time[i+1] = appearance_time;
             position_in_foodweb = i + 1;
             break;
         }
@@ -66,6 +68,7 @@ void Foodweb::remove_species(size_t index)
     for (size_t i = index; i < m_species_count; i++)
     {
         m_species[i] = m_species[i + 1];
+        m_appearance_time[i] = m_appearance_time[i + 1];
     }
 
     calculated = false;

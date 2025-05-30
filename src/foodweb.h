@@ -22,10 +22,12 @@ public:
     size_t get_dimension() const;
 
     /// @brief Adds a species to the foodweb, sorted by bodymass
+    /// @param species Species to add
+    /// @param appearance_time Time at which the species is added to the foodweb
     ///
     /// Also increments m_species_count and m_local_dispersal_rate
     /// @return position of the species or -1 if maximum species in this web was exceeded
-    size_t add_species(Species *species);
+    size_t add_species(Species *species, double appearance_time);
     /// @brief Removes a species from the foodweb.
     ///
     /// Also decrements m_species_count and m_local_dispersal_rate.
@@ -109,6 +111,9 @@ private:
 
     /// @brief array of species in this foodweb
     Species **m_species;
+
+    /// @brief array of appearance times of the species in this foodweb
+    double *m_appearance_time;
 
     /// @brief number of species on this habitat
     ///

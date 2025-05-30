@@ -22,8 +22,9 @@ public:
     /// Does NOT delete the new species, if it couldn't be added!
     /// @param target 
     /// @param new_species 
+    /// @param time Time at which the species is added
     /// @return true if the species can survive, false otherwise
-    static bool can_surive(Foodweb *target, Species *new_species, SimulationSettings settings);
+    static bool can_surive(Foodweb *target, Species *new_species, double time, SimulationSettings settings);
 
     /// @brief Calculates equilibrium of a foodweb
     ///
