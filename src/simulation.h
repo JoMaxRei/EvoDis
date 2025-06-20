@@ -57,6 +57,9 @@ private:
 
     SimulationSettings m_settings;
 
+    
+    void update_counters(bool event_is_speciation, bool success, double trophic_level);
+
     /// @brief performs a speciation; if succesful:
     ///
     /// - adds the species to the foodweb
@@ -66,8 +69,9 @@ private:
     /// - updates global values (population count, total dispersal rate, number of living species, free indicies)
     /// @param[out] x x coordinate of the foodweb the speciation has happened in
     /// @param[out] y y coordinate of the foodweb the speciation has happened in
-    /// @return true if the speciation was successful, false otherwise
-    bool handle_speciation(size_t &x, size_t &y);
+    /// @param[out] trophic_level trophic level of the newly created species OR of the parent species if speciation failed
+    /// @return if speciation was successful or not
+    bool handle_speciation(size_t &x, size_t &y, double &trophic_level);
 
     /// @brief performs a dispersal; if succesful:
     ///
@@ -78,8 +82,9 @@ private:
     /// - updates global values (population count, total dispersal rate)
     /// @param[out] x x coordinate of the food web that was the target of the dispersal.
     /// @param[out] y y coordinate of the food web that was the target of the dispersal.
-    /// @return true if the dispersal was successful, false otherwise
-    bool handle_dispersal(size_t &x, size_t &y);
+    /// @param[out] trophic_level trophic level of the dispersing species
+    /// @return if dispersal was successful or not
+    bool handle_dispersal(size_t &x, size_t &y, double &trophic_level);
 
     /// @brief Finds a habitat where a speciation takes place
     /// @param[out] target_x x coordinate of the habitat to speciate from
@@ -159,17 +164,20 @@ private:
     /// @brief Counts the number of speciation events that took place
     uint64_t m_speciation_counter;
 
-    /// @brief Counts the number of successful speciation events that took place
-    uint64_t m_successful_speciation_counter;
+    /// @brief Counts the number of successful speciation events that took place, broken down by trophic levels
+    std::vector<uint64_t> m_successful_speciation_counter;
 
-    /// @brief Counts the number of speciation events that took place
-    uint64_t m_failed_speciation_counter;
+    /// @brief Counts the number of speciation events that took place, broken down by trophic levels
+    std::vector<uint64_t> m_failed_speciation_counter;
 
-    /// @brief Counts the number of successful disperal events that took place
-    uint64_t m_successful_disperal_counter;
+    /// @brief Counts the number of successful disperal events that took place, broken down by trophic levels
+    std::vector<uint64_t> m_successful_disperal_counter;
 
-    /// @brief Counts the number of disperal events that took place
-    uint64_t m_failed_disperal_counter;
+    /// @brief Counts the number of disperal events that took place, broken down by trophic levels
+    std::vector<uint64_t> m_failed_disperal_counter;
+
+    /// @brief Counts the number of trophic level classes
+    size_t m_number_of_TL_classes;
 
     /// @brief Saving interval
     double m_save_interval;

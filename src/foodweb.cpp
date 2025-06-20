@@ -114,6 +114,15 @@ Species *Foodweb::get_species(size_t index)
     return m_species[index];
 }
 
+double Foodweb::get_appearance_time(size_t index)
+{
+    if (index >= m_species_count)
+    {
+        LOG(ERROR) << "Trying to access element " << index << " when species array is only " << m_species_count << " long";
+    }
+    return m_appearance_time[index];
+}
+
 bool Foodweb::is_full() const
 {
     if (m_species_count >= MAX_DIM)
@@ -228,10 +237,37 @@ void Foodweb::update_trophic_levels(std::vector<std::vector<size_t>> preys, std:
     }
 }
 
-// double Foodweb::calculate_trophic_level(size_t index)
-// {
-//     return 0.0;
-// }
+double Foodweb::calculate_trophic_level(size_t index)
+{
+    std::vector<std::vector<size_t>> preys(index + 1, std::vector<size_t>{});
+    std::vector<size_t> number_of_preys(index + 1, 0);
+
+    calculate_feeding_relationships(preys, number_of_preys, index + 1);
+
+    std::vector<double> TL_mean_preys(index + 1, 0.0);
+
+    for (size_t j = 1; j < index + 1; j++)
+    {
+        // double min = TL_shortest_Path[preys[j][0]];
+        double mean = TL_mean_preys[preys[j][0]];
+
+        // starting from 1 because 0 is already set above
+        // this is done because for shortest path a comparison is needed
+        for (size_t i = 1; i < number_of_preys[j]; i++)
+        {
+            // if (TL_shortest_Path[preys[j][i]] < min)
+            //     min = TL_shortest_Path[preys[j][i]];
+            mean += TL_mean_preys[preys[j][i]];
+        }
+
+        mean /= number_of_preys[j];
+
+        // TL_shortest_Path[j] = min + 1.0;
+        TL_mean_preys[j] = mean + 1.0;
+    }
+
+    return TL_mean_preys[index];
+}
 
 double Foodweb::get_fitness(size_t index) const
 {
@@ -317,10 +353,36 @@ void Foodweb::calculate_feeding_relationships(
                 double predation_strength = INVERTED_SQRT_HALF_PI * predator->m_predator_strength * exp(-2.0 * relative_difference * relative_difference);
                 epsilon[predator_index].push_back(predation_strength);
 
-                if (predation_strength < 0.0)
-                {
-                    // LOG(DEBUG) << "Epsilon for " << predator_index << " is " << predation_strength;
-                }
+                // if (predation_strength < 0.0)
+                // {
+                //     LOG(DEBUG) << "Epsilon for " << predator_index << " is " << predation_strength;
+                // }
+            }
+        }
+    }
+    // LOG(DEBUG) << " - END";
+}
+
+
+
+void Foodweb::calculate_feeding_relationships(
+    std::vector<std::vector<size_t>> &preys, std::vector<size_t> &number_of_preys, size_t index)
+{
+    // LOG(DEBUG) << " - START";
+    for (size_t predator_index = 1; predator_index < index; predator_index++)
+    {
+        Species *predator = m_species[predator_index];
+        for (size_t prey_index = 0; prey_index < predator_index; prey_index++)
+        {
+            Species *prey = m_species[prey_index];
+
+            double relative_difference = std::abs(prey->m_bodymass - predator->m_feeding_center) / predator->m_feeding_range;
+
+            if (relative_difference < 1.0)
+            {
+                preys[predator_index].push_back(prey_index);
+                number_of_preys[predator_index] += 1;
+
             }
         }
     }

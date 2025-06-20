@@ -45,6 +45,8 @@ void Output::create_file_names(const std::string &path)
         "LTD_slope" // 7
         ,
         "abort" // 8
+        // ,
+        // "simulation_time" // 9
     };
 
     for (const auto &suffix : suffixes)
@@ -97,9 +99,9 @@ bool Output::create_new_files()
         case OUT_GLOBAL_INFO:
             file[i] << "time" << "\t"
                     << "successful speciation counter" << "\t"
-                    << "failed speciation counter" << "\t"
+                    << "percentage of successful speciations" << "\t"
                     << "successful disperal counter" << "\t"
-                    << "failed disperal counter" << "\t"
+                    << "percentage of successful dispersals" << "\t"
                     << "lower bound of tl class" << "\t"
                     << "upper bound of tl class" << "\t"
                     << "number of species" << "\t"
@@ -110,6 +112,12 @@ bool Output::create_new_files()
                     << "min distribution" << "\t"
                     << "mean distribution" << "\t"
                     << "max distribution" << "\t"
+                    << "min age species" << "\t"
+                    << "min age populations" << "\t"
+                    << "mean age species" << "\t"
+                    << "mean age populations" << "\t"
+                    << "max age species" << "\t"
+                    << "max age populations" << "\t"
                     << "min dispersal rate" << "\t"
                     << "mean dispersal rate species" << "\t"
                     << "mean dispersal rate populations" << "\t"
@@ -549,9 +557,9 @@ void Output::print_line_trophic_levels(resfile_type f,
 void Output::print_line_global_info(resfile_type f,
                                     double time,
                                     uint64_t successful_speciation_counter,
-                                    uint64_t failed_speciation_counter,
+                                    double percentage_of_successful_speciations,
                                     uint64_t successful_disperal_counter,
-                                    uint64_t failed_disperal_counter,
+                                    double percentage_of_successful_disperals,
                                     double lower_bound_of_tl_class,
                                     double upper_bound_of_tl_class,
                                     size_t number_of_species,
@@ -562,6 +570,12 @@ void Output::print_line_global_info(resfile_type f,
                                     size_t min_distribution,
                                     double mean_distribution,
                                     size_t max_distribution,
+                                    double min_age_species,
+                                    double min_age_populations,
+                                    double mean_age_species,
+                                    double mean_age_populations,
+                                    double max_age_species,
+                                    double max_age_populations,
                                     double min_dispersal_rate,
                                     double mean_dispersal_rate_species,
                                     double mean_dispersal_rate_populations,
@@ -581,9 +595,9 @@ void Output::print_line_global_info(resfile_type f,
 
     file[f] << time << "\t"
             << successful_speciation_counter << "\t"
-            << failed_speciation_counter << "\t"
+            << percentage_of_successful_speciations << "\t"
             << successful_disperal_counter << "\t"
-            << failed_disperal_counter << "\t"
+            << percentage_of_successful_disperals << "\t"
             << lower_bound_of_tl_class << "\t"
             << upper_bound_of_tl_class << "\t"
             << number_of_species << "\t"
@@ -594,6 +608,12 @@ void Output::print_line_global_info(resfile_type f,
             << min_distribution << "\t"
             << mean_distribution << "\t"
             << max_distribution << "\t"
+            << min_age_species << "\t"
+            << min_age_populations << "\t"
+            << mean_age_species << "\t"
+            << mean_age_populations << "\t"
+            << max_age_species << "\t"
+            << max_age_populations << "\t"
             << min_dispersal_rate << "\t"
             << mean_dispersal_rate_species << "\t"
             << mean_dispersal_rate_populations << "\t"

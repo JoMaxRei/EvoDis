@@ -41,6 +41,8 @@ bool FoodwebCache::can_surive(Foodweb *target, Species *new_species, double time
         return false;
     }
 
+    new_species->update_trophic_level(target->calculate_trophic_level(new_index));
+
     return true;
 }
 

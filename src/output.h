@@ -41,7 +41,9 @@ public:
         ,
         OUT_ABORT // 8
         ,
-        OUT_FILE_COUNT // 9
+        // OUT_SIMULATION_TIME // 9
+        // ,
+        OUT_FILE_COUNT // 10
     };
 
     /// @brief Creates new output files
@@ -159,9 +161,9 @@ public:
     void print_line_global_info(resfile_type f,
                                 double time,
                                 uint64_t successful_speciation_counter,
-                                uint64_t failed_speciation_counter,
+                                double percentage_of_successful_speciations,
                                 uint64_t successful_disperal_counter,
-                                uint64_t failed_disperal_counter,
+                                double percentage_of_successful_dispersals,
                                 double lower_bound_of_tl_class,
                                 double upper_bound_of_tl_class,
                                 size_t number_of_species,
@@ -172,6 +174,12 @@ public:
                                 size_t min_distribution,
                                 double mean_distribution,
                                 size_t max_distribution,
+                                double min_age_species,
+                                double min_age_populations,
+                                double mean_age_species,
+                                double mean_age_populations,
+                                double max_age_species,
+                                double max_age_populations,
                                 double min_dispersal_rate,
                                 double mean_dispersal_rate_species,
                                 double mean_dispersal_rate_populations,
@@ -200,6 +208,9 @@ public:
     /// @param f OUT_LTD_SLOPE
     /// @param time current time of the simulation
     void print_LTD_slope(resfile_type f, double time);
+
+    /// @brief Prints the current simulation time
+    // void print_simulation_time(resfile_type f, double time);
 
 private:
     /// @brief Creates the names of the output files
