@@ -46,6 +46,11 @@ public:
     /// @return random species in this foodweb, weighted by its dispersal rate
     Species *find_species_for_dispersal(double random_value);
 
+    /// @brief Removes a random species from the foodweb based on a random value; calls remove_species
+    /// @param random_value
+    /// @return global index of the removed species
+    size_t remove_random_species(double random_value);
+
     /// @brief Returns a species within this foodweb by its index
     /// @param index
     Species *get_species(size_t index);

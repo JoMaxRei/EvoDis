@@ -58,7 +58,7 @@ private:
     SimulationSettings m_settings;
 
     
-    void update_counters(bool event_is_speciation, bool success, double trophic_level);
+    void update_counters(bool event_is_speciation, bool event_is_dispersal, bool success, double trophic_level);
 
     /// @brief performs a speciation; if succesful:
     ///
@@ -67,30 +67,36 @@ private:
     /// - recalculates that web if species has prey
     ///
     /// - updates global values (population count, total dispersal rate, number of living species, free indicies)
-    /// @param[out] x x coordinate of the foodweb the speciation has happened in
-    /// @param[out] y y coordinate of the foodweb the speciation has happened in
+    /// @param[out] x x coordinate of the habitat the speciation has happened in
+    /// @param[out] y y coordinate of the habitat the speciation has happened in
     /// @param[out] trophic_level trophic level of the newly created species OR of the parent species if speciation failed
     /// @return if speciation was successful or not
     bool handle_speciation(size_t &x, size_t &y, double &trophic_level);
 
     /// @brief performs a dispersal; if succesful:
     ///
-    /// - adds the species to the foodweb
+    /// - adds the species to the habitat
     ///
     /// - recalculates that web if species has prey
     ///
     /// - updates global values (population count, total dispersal rate)
-    /// @param[out] x x coordinate of the food web that was the target of the dispersal.
-    /// @param[out] y y coordinate of the food web that was the target of the dispersal.
+    /// @param[out] x x coordinate of the habitat that was the target of the dispersal.
+    /// @param[out] y y coordinate of the habitat that was the target of the dispersal.
     /// @param[out] trophic_level trophic level of the dispersing species
     /// @return if dispersal was successful or not
     bool handle_dispersal(size_t &x, size_t &y, double &trophic_level);
 
-    /// @brief Finds a habitat where a speciation takes place
-    /// @param[out] target_x x coordinate of the habitat to speciate from
-    /// @param[out] target_y y coordinate of the habitat to speciate from
+    /// @brief performs an extinction event
+    /// @param x x coordinate of the habitat in which the extinction took place
+    /// @param y y coordinate of the habitat in which the extinction took place
+    /// @return global index of the species that went extinct
+    size_t handle_extinction(size_t &x, size_t &y);
+
+    /// @brief Finds a habitat where a speciation or extinction takes place
+    /// @param[out] target_x x coordinate of the habitat
+    /// @param[out] target_y y coordinate of the habitat
     /// @return true if a habitat has been found, false otherwise
-    bool find_habitat_for_speciation(size_t &target_x, size_t &target_y);
+    bool find_habitat_for_speciation_or_extinction(size_t &target_x, size_t &target_y);
 
     /// @brief Finds a habitat to diesperse from
     /// @param[out] target_x x coordinate of the habitat to disperse from

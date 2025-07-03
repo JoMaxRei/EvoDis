@@ -12,6 +12,7 @@ struct SimulationSettings
     uint64_t speciation_rate_per_population;
     /// @brief Mean difference in bodymass between predator and prey.
     double mean_bodymass_ratio_predator_prey;
+    double extinction_rate;
     double initial_dispersal_rate;
     double dispersal_variance;
     double zero_crossing;
@@ -36,6 +37,7 @@ struct SimulationSettings
     SimulationSettings(
         uint64_t speciation_rate_per_population
         , double mean_bodymass_ratio_predator_prey
+        , double extinction_rate
         , double initial_dispersal_rate
         , double dispersal_variance
         , double zero_crossing
@@ -52,6 +54,7 @@ struct SimulationSettings
         ) :
         speciation_rate_per_population(speciation_rate_per_population)
         , mean_bodymass_ratio_predator_prey(mean_bodymass_ratio_predator_prey)
+        , extinction_rate(extinction_rate)
         , initial_dispersal_rate(initial_dispersal_rate)
         , dispersal_variance(dispersal_variance)
         , zero_crossing(zero_crossing)
@@ -75,6 +78,7 @@ struct SimulationSettings
         return SimulationSettings(
             1000000     // speciation_rate_per_population
             , 2.0       // mean_bodymass_ratio_predator_prey
+            , 0.0       // extinction_rate
             , 10.0      // initial_dispersal_rate
             , 0.3       // dispersal_variance
             , 1e5       // zero_crossing

@@ -32,6 +32,8 @@ int main(int argc, char **argv)
 
     create_new->add_option("-d,--drange", settings.dispersal_range, "dispersal range of a species; Default: 1");
 
+    create_new->add_option("-e,--extr", settings.extinction_rate, "random extinction rate; Default: 0");
+
     create_new->add_option("-i,--inidr", settings.initial_dispersal_rate, "initial dispersal rate; Default: 10.0");
     create_new->add_option("-z,--zeroc", settings.zero_crossing, "dispersal rate at which the predation strength is zero; Default: 1e5");
 

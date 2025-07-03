@@ -105,6 +105,19 @@ Species *Foodweb::find_species_for_dispersal(double random_value)
     return NULL;
 }
 
+size_t Foodweb::remove_random_species(double random_value)
+{
+    double random_id = static_cast<double>(m_species_count - 1) * random_value;
+    // LOG(DEBUG) << "random_id is " << random_id;
+    size_t local_id = static_cast<size_t>(random_id) + 1;
+
+    size_t global_id = get_species(local_id)->m_position_in_array;
+
+    remove_species(local_id);
+
+    return global_id;
+}
+
 Species *Foodweb::get_species(size_t index)
 {
     if (index >= m_species_count)

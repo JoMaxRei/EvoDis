@@ -443,7 +443,6 @@ void Output::print_settings(resfile_type f,
     file[f] << std::endl;
     file[f] << "Number of habitats (n²):   " << settings.number_of_habitats() << std::endl;
     file[f] << "Grid length (n):           " << settings.grid_length << std::endl;
-    file[f] << "Dispersal range (l):       " << settings.dispersal_range << std::endl;
     if (settings.periodic_boundary_conditions)
         file[f] << "Boundary conditions:       periodic" << std::endl;
     else
@@ -451,7 +450,9 @@ void Output::print_settings(resfile_type f,
     file[f] << std::endl;
     file[f] << "============" << std::endl;
     file[f] << std::endl;
+    file[f] << "Extinction rate:           " << settings.extinction_rate << std::endl;
     file[f] << "Initial dispersal rate:    " << settings.initial_dispersal_rate << std::endl;
+    file[f] << "Dispersal range (l):       " << settings.dispersal_range << std::endl;
     file[f] << "Dispersel variance:        " << settings.dispersal_variance << std::endl;
     file[f] << "Trade-off parameter:       " << settings.zero_crossing << std::endl;
     file[f] << std::endl;
